@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">CourseRadar</string>
+    <string name="sign_in_with_myub">Sign in with MyUB</string>
+    <string name="proceed_as_guest">Proceed as guest</string>
 </resources>
