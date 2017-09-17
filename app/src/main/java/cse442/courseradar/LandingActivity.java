@@ -4,10 +4,14 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.design.widget.CoordinatorLayout;
+import android.support.design.widget.NavigationView;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -23,7 +27,6 @@ import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.auth.GoogleAuthCredential;
 import com.google.firebase.auth.GoogleAuthProvider;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -36,17 +39,17 @@ import com.google.firebase.database.ValueEventListener;
 *
 *
 * READ ME if you are a DEVELOPER:
-*   1, It is the only activity that not extends BaseActivity(i.e., it has no side nav-bar)
-*   2, Sign in behavior:
-*       2.1, If the user sign in directly from here, just redirect to MainActivity, and finish() this activity
 *
-*       2.2, Since we allow user proceed as a guest, they can also sign in from any other activity if they want,
+*   1, Sign in behavior:
+*       1.1, If the user sign in directly from here, just redirect to MainActivity, and finish() this activity
+*
+*       1.2, Since we allow user proceed as a guest, they can also sign in from any other activity if they want,
 *           in this case, read the extra from the intent bundle to identify where user come from then proceed login logic,
 *           after user logged in, just finish() this activity to bring user back to the activity he/she comes from
 *
 * */
 
-public class LandingActivity extends AppCompatActivity implements View.OnClickListener, GoogleApiClient.OnConnectionFailedListener{
+public class LandingActivity extends DrawerActivity implements View.OnClickListener, GoogleApiClient.OnConnectionFailedListener{
 
     private static final String TAG = LandingActivity.class.getSimpleName();
     private static final int RC_SIGN_IN = 9001;
@@ -60,13 +63,14 @@ public class LandingActivity extends AppCompatActivity implements View.OnClickLi
     private FirebaseAuth firebaseAuth;
     private FirebaseUser firebaseUser;
     private DatabaseReference firebaseDB;
-    private GoogleApiClient googleApiClient;
     private ProgressDialog progressDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_landing);
+//        setContentView(R.layout.activity_landing);
+        CoordinatorLayout coordinatorLayout = (CoordinatorLayout) findViewById(R.id.app_bar);
+        getLayoutInflater().inflate(R.layout.activity_landing, coordinatorLayout);
         btnSignInWithMyUB = (Button) findViewById(R.id.btn_sign_in_with_myub);
         btnSignInWithMyUB.setOnClickListener(this);
         tvAsGuest = (TextView) findViewById(R.id.tv_as_guest);
@@ -85,21 +89,23 @@ public class LandingActivity extends AppCompatActivity implements View.OnClickLi
 
         /* Config Google sign in */
         GoogleSignInOptions googleSignInOptions = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                                                    .requestIdToken(getString(R.string.default_web_client_id))
-                                                    .requestEmail()
-                                                    .build();
+                .requestIdToken(getString(R.string.default_web_client_id))
+                .requestEmail()
+                .build();
         googleApiClient = new GoogleApiClient.Builder(this)
-                            .enableAutoManage(this, this)
-                            .addApi(Auth.GOOGLE_SIGN_IN_API, googleSignInOptions)
-                            .build();
+                .enableAutoManage(this, this)
+                .addApi(Auth.GOOGLE_SIGN_IN_API, googleSignInOptions)
+                .build();
 
         firebaseAuth = FirebaseAuth.getInstance();
         firebaseDB = FirebaseDatabase.getInstance().getReference(USER_DATABASE);
+        lockDrawer();
     }
 
     @Override
     protected void onStart() {
         Log.d(TAG, "onStart");
+
         if(sourceActivity == null){
             sourceActivity = TAG;
         }
@@ -124,10 +130,10 @@ public class LandingActivity extends AppCompatActivity implements View.OnClickLi
     }
 
     /* invoke sign out procedure, this signs out non-UB email user from firebaseAuth and GoogleSignInAPI */
-    private void signOut(){
-        firebaseAuth.signOut();
-        Auth.GoogleSignInApi.signOut(googleApiClient);
-    }
+//    private void signOut(){
+//        firebaseAuth.signOut();
+//        Auth.GoogleSignInApi.signOut(googleApiClient);
+//    }
 
     /* call back from sign in */
     @Override
@@ -171,8 +177,24 @@ public class LandingActivity extends AppCompatActivity implements View.OnClickLi
                             if(firebaseUser != null){
                                 /* check if this user is not in user database */
                                 checkUserDatabase();
-                                /* after check, redirect to MainActivity */
-                                startActivity(new Intent(LandingActivity.this, MainActivity.class).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP));
+                                /*
+                                * after database check, the behavior is as follows:
+                                *
+                                * 1, update the side nav drawer to signed status
+                                *
+                                * 2.1 if user come from LandingActivity and signed in, redirect to MainActivity
+                                * 2.2 else user come from other activity, just finish this activity
+                                *
+                                * */
+
+                                if(sourceActivity != null && sourceActivity.equals(TAG)){
+                                    startActivity(new Intent(LandingActivity.this, MainActivity.class).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP));
+                                }else{
+                                    finish();
+                                }
+                                if(googleApiClient != null){
+                                    Log.wtf(TAG, "googleApiClient is instantiated");
+                                }
                             }
                         }else{
                             Toast.makeText(LandingActivity.this, "Authentication failed.",
@@ -205,16 +227,12 @@ public class LandingActivity extends AppCompatActivity implements View.OnClickLi
         });
     }
 
-    private String parseUBIT(String email){
-        return email.substring(0, email.indexOf("@"));
-    }
-
     @Override
     public void onClick(View v) {
+        /*
+        * check the sourceActivity flag to determine whether redirect to MainActivity or just call finish()
+        * */
         if(v == btnSignInWithMyUB){
-            /*
-            * check the sourceActivity flag to determine whether redirect to MainActivity or just call finish()
-            * */
             signIn();
         }else if(v == tvAsGuest){
             /* if this user come from other activity and clicked proceed as guest, just finish this activity without redirecting */

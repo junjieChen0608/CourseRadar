@@ -8,7 +8,7 @@
     tools:context="cse442.courseradar.LandingActivity">
 
     <ImageView
-        android:id="@+id/imageView"
+        android:id="@+id/iv_user_profile_photo"
         android:layout_width="100dp"
         android:layout_height="100dp"
         android:layout_marginLeft="8dp"
@@ -32,13 +32,13 @@
         android:textAllCaps="false"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/imageView" />
+        app:layout_constraintTop_toBottomOf="@+id/iv_user_profile_photo" />
 
     <TextView
         android:id="@+id/tv_as_guest"
         android:layout_width="wrap_content"
         android:layout_height="0dp"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="16dp"
         android:text="@string/proceed_as_guest"
         android:textAllCaps="false"
         app:layout_constraintHorizontal_bias="0.501"
