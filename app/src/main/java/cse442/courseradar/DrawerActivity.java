@@ -3,6 +3,7 @@ package cse442.courseradar;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -18,6 +19,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.auth.api.Auth;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
@@ -25,12 +29,12 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
 public class DrawerActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
+        implements NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.OnConnectionFailedListener {
 
     private static final String TAG = DrawerActivity.class.getSimpleName();
     protected NavigationView navigationView;
     protected static GoogleApiClient googleApiClient;
-    private DrawerLayout drawer;
+    protected DrawerLayout drawer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,10 +52,20 @@ public class DrawerActivity extends AppCompatActivity
         navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
         if(googleApiClient != null){
-            Log.wtf(TAG, "google api client is created");
+            Log.wtf(TAG, "google api client is created and connected ? " + googleApiClient.isConnected());
         }else{
-            Log.wtf(TAG, "google api client is somehow become null again");
+            Log.wtf(TAG, "google api client is null");
+            /* Config Google sign in */
+            GoogleSignInOptions googleSignInOptions = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                    .requestIdToken(getString(R.string.default_web_client_id))
+                    .requestEmail()
+                    .build();
+            googleApiClient = new GoogleApiClient.Builder(this)
+                    .enableAutoManage(this, this)
+                    .addApi(Auth.GOOGLE_SIGN_IN_API, googleSignInOptions)
+                    .build();
         }
+
     }
 
     @SuppressWarnings("StatementWithEmptyBody")
@@ -62,9 +76,12 @@ public class DrawerActivity extends AppCompatActivity
         // TODO implement click menu item logic
         switch (id){
             case R.id.nav_sign_in:
-                startActivity(new Intent(this, LandingActivity.class).setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT));
+                Intent signInIntent = new Intent(this, LandingActivity.class).setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                signInIntent.putExtra("source", TAG);
+                startActivity(signInIntent);
                 break;
             case R.id.nav_sign_out:
+                Log.wtf(TAG, "sign out");
                 signOut();
                 break;
             case R.id.nav_my_profile:
@@ -102,19 +119,32 @@ public class DrawerActivity extends AppCompatActivity
     protected void signOut(){
         FirebaseAuth.getInstance().signOut();
         if(googleApiClient != null){
-            Auth.GoogleSignInApi.signOut(googleApiClient).setResultCallback(new ResultCallback<Status>() {
+            /*
+            must check if google API client is connected to successfully sign user out
+            */
+            googleApiClient.connect();
+            googleApiClient.registerConnectionCallbacks(new GoogleApiClient.ConnectionCallbacks() {
                 @Override
-                public void onResult(@NonNull Status status) {
-                    updateDrawerUI(null);
+                public void onConnected(@Nullable Bundle bundle) {
+                    Auth.GoogleSignInApi.signOut(googleApiClient).setResultCallback(new ResultCallback<Status>() {
+                        @Override
+                        public void onResult(@NonNull Status status) {
+                            Log.d(TAG, "After sign out, is this google API client connected ? " + googleApiClient.isConnected());
+                            updateDrawerUI(null);
+                        }
+                    });
+                }
+
+                @Override
+                public void onConnectionSuspended(int i) {
+                    Log.d(TAG, "Google API Client Connection Suspended");
                 }
             });
-
-        }else{
-            Log.wtf(TAG, "google api is null in sign out");
         }
 
     }
 
+    /* update drawer UI element according to user's sign up status */
     protected void updateDrawerUI(FirebaseUser user){
         Log.d(TAG, "upating UI...");
         View headerView = navigationView.getHeaderView(0);
@@ -127,22 +157,37 @@ public class DrawerActivity extends AppCompatActivity
             Log.d(TAG, "upated as signed in");
             tvUserName.setText(parseUBIT(user.getEmail()));
             tvUserEmail.setText(user.getEmail());
+            navigationView.getMenu().clear();
             navigationView.inflateMenu(R.menu.drawer_signed_in);
         }else{
             Log.d(TAG, "upated as signed out");
             tvUserName.setText("Guset");
             tvUserEmail.setText("");
+            navigationView.getMenu().clear();
             navigationView.inflateMenu(R.menu.drawer_signed_out);
         }
     }
 
+    /* lock the drawer and hide toolbar in this activity */
     protected void lockDrawer(){
         drawer.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
         getSupportActionBar().hide();
     }
 
+    /* unlock the drawer and reveal toolbar in this activity */
     protected void unlockDrawer(){
         drawer.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED);
         getSupportActionBar().show();
+    }
+
+    /* check if this account is UB email */
+    protected boolean isUBEmail(GoogleSignInAccount account){
+        return account != null && account.getEmail().contains("@buffalo.edu");
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+        Log.d(TAG, "onConnectionFailed:" + connectionResult);
+        Toast.makeText(this, "Google Play Services error.", Toast.LENGTH_SHORT).show();
     }
 }

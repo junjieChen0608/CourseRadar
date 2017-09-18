@@ -1,6 +1,7 @@
 package cse442.courseradar;
 
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -49,7 +50,7 @@ import com.google.firebase.database.ValueEventListener;
 *
 * */
 
-public class LandingActivity extends DrawerActivity implements View.OnClickListener, GoogleApiClient.OnConnectionFailedListener{
+public class LandingActivity extends DrawerActivity implements View.OnClickListener{
 
     private static final String TAG = LandingActivity.class.getSimpleName();
     private static final int RC_SIGN_IN = 9001;
@@ -68,9 +69,10 @@ public class LandingActivity extends DrawerActivity implements View.OnClickListe
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-//        setContentView(R.layout.activity_landing);
-        CoordinatorLayout coordinatorLayout = (CoordinatorLayout) findViewById(R.id.app_bar);
-        getLayoutInflater().inflate(R.layout.activity_landing, coordinatorLayout);
+        LayoutInflater inflater = (LayoutInflater) this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        View contentView = inflater.inflate(R.layout.activity_landing, null, false);
+        drawer.addView(contentView, 0);
+
         btnSignInWithMyUB = (Button) findViewById(R.id.btn_sign_in_with_myub);
         btnSignInWithMyUB.setOnClickListener(this);
         tvAsGuest = (TextView) findViewById(R.id.tv_as_guest);
@@ -86,16 +88,6 @@ public class LandingActivity extends DrawerActivity implements View.OnClickListe
             sourceActivity = TAG;
             Log.d(TAG, "just landed: " + sourceActivity);
         }
-
-        /* Config Google sign in */
-        GoogleSignInOptions googleSignInOptions = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestIdToken(getString(R.string.default_web_client_id))
-                .requestEmail()
-                .build();
-        googleApiClient = new GoogleApiClient.Builder(this)
-                .enableAutoManage(this, this)
-                .addApi(Auth.GOOGLE_SIGN_IN_API, googleSignInOptions)
-                .build();
 
         firebaseAuth = FirebaseAuth.getInstance();
         firebaseDB = FirebaseDatabase.getInstance().getReference(USER_DATABASE);
@@ -129,12 +121,6 @@ public class LandingActivity extends DrawerActivity implements View.OnClickListe
         startActivityForResult(signInIntent, RC_SIGN_IN);
     }
 
-    /* invoke sign out procedure, this signs out non-UB email user from firebaseAuth and GoogleSignInAPI */
-//    private void signOut(){
-//        firebaseAuth.signOut();
-//        Auth.GoogleSignInApi.signOut(googleApiClient);
-//    }
-
     /* call back from sign in */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -145,15 +131,11 @@ public class LandingActivity extends DrawerActivity implements View.OnClickListe
         }
     }
 
-    /* check if this account is UB email */
-    private boolean isUBEmail(GoogleSignInAccount account){
-        return account != null && account.getEmail().contains("@buffalo.edu");
-    }
-
     /* handles the sign in result from Google sign in API */
     private void handleSignInResult(GoogleSignInResult result){
         if(result.isSuccess()){
             GoogleSignInAccount account = result.getSignInAccount();
+            Log.wtf(TAG, "After sign in success, is Google API client connected ? " + googleApiClient.isConnected());
             if(isUBEmail(account)){
                 firebaseAuthWithGoogle(account);
             }else{
@@ -188,13 +170,9 @@ public class LandingActivity extends DrawerActivity implements View.OnClickListe
                                 * */
 
                                 if(sourceActivity != null && sourceActivity.equals(TAG)){
-                                    startActivity(new Intent(LandingActivity.this, MainActivity.class).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP));
-                                }else{
-                                    finish();
+                                    startActivity(new Intent(LandingActivity.this, MainActivity.class).setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT));
                                 }
-                                if(googleApiClient != null){
-                                    Log.wtf(TAG, "googleApiClient is instantiated");
-                                }
+                                finish();
                             }
                         }else{
                             Toast.makeText(LandingActivity.this, "Authentication failed.",
@@ -258,11 +236,5 @@ public class LandingActivity extends DrawerActivity implements View.OnClickListe
         if (progressDialog != null && progressDialog.isShowing()) {
             progressDialog.dismiss();
         }
-    }
-
-    @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-        Log.d(TAG, "onConnectionFailed:" + connectionResult);
-        Toast.makeText(this, "Google Play Services error.", Toast.LENGTH_SHORT).show();
     }
 }
