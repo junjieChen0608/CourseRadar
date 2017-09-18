@@ -97,7 +97,7 @@ public class LandingActivity extends DrawerActivity implements View.OnClickListe
     @Override
     protected void onStart() {
         Log.d(TAG, "onStart");
-
+        currentContext = this;
         if(sourceActivity == null){
             sourceActivity = TAG;
         }

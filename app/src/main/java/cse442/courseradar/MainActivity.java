@@ -33,6 +33,7 @@ public class MainActivity extends DrawerActivity {
     protected void onStart() {
         super.onStart();
         Log.wtf("onStart","MainActivity onStart");
+        currentContext = this;
         if(FirebaseAuth.getInstance().getCurrentUser() == null){
             Log.wtf(TAG + " onStart", "user is signed out");
         }

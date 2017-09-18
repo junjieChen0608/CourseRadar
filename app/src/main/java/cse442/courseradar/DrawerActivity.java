@@ -1,5 +1,7 @@
 package cse442.courseradar;
 
+import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -35,6 +37,7 @@ public class DrawerActivity extends AppCompatActivity
     protected NavigationView navigationView;
     protected static GoogleApiClient googleApiClient;
     protected DrawerLayout drawer;
+    protected Context currentContext;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,7 +68,6 @@ public class DrawerActivity extends AppCompatActivity
                     .addApi(Auth.GOOGLE_SIGN_IN_API, googleSignInOptions)
                     .build();
         }
-
     }
 
     @SuppressWarnings("StatementWithEmptyBody")
@@ -100,14 +102,24 @@ public class DrawerActivity extends AppCompatActivity
      * this is a workaround to avoid signing user out if the app is cleaned from memory or this activity is destroyed */
     @Override
     public void onBackPressed() {
+
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
+            Log.d(TAG, "close window");
             drawer.closeDrawer(GravityCompat.START);
         } else {
-            Intent startMain = new Intent(Intent.ACTION_MAIN);
-            startMain.addCategory(Intent.CATEGORY_HOME);
-            startMain.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            startActivity(startMain);
+            if(currentContext == null){
+                currentContext = this;
+            }else if(((Activity)currentContext).getClass() == MainActivity.class){
+                Log.d(TAG, "go home");
+                Intent startMain = new Intent(Intent.ACTION_MAIN);
+                startMain.addCategory(Intent.CATEGORY_HOME);
+                startMain.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(startMain);
+            }else{
+                Log.d(TAG, "go back to previous activity on the stack");
+                super.onBackPressed();
+            }
         }
     }
 
