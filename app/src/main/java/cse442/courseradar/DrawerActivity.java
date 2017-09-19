@@ -1,6 +1,7 @@
 package cse442.courseradar;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -13,10 +14,8 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -36,8 +35,11 @@ public class DrawerActivity extends AppCompatActivity
     private static final String TAG = DrawerActivity.class.getSimpleName();
     protected NavigationView navigationView;
     protected static GoogleApiClient googleApiClient;
+    /* the universal drawer that shared among sub-classes */
     protected DrawerLayout drawer;
-    protected Context currentContext;
+    /* the activity that user is currently in, it is used to implement back button logic */
+    protected Activity currentActivity;
+    private ProgressDialog progressDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,12 +80,12 @@ public class DrawerActivity extends AppCompatActivity
         // TODO implement click menu item logic
         switch (id){
             case R.id.nav_sign_in:
-                Intent signInIntent = new Intent(this, LandingActivity.class).setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-                signInIntent.putExtra("source", TAG);
+                Intent signInIntent = new Intent(currentActivity, LandingActivity.class).setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                /* the extra information is used to notify the LandingActivity from which activity does this intent is made */
+                signInIntent.putExtra("source", currentActivity.getClass().getSimpleName());
                 startActivity(signInIntent);
                 break;
             case R.id.nav_sign_out:
-                Log.wtf(TAG, "sign out");
                 signOut();
                 break;
             case R.id.nav_my_profile:
@@ -108,9 +110,9 @@ public class DrawerActivity extends AppCompatActivity
             Log.d(TAG, "close window");
             drawer.closeDrawer(GravityCompat.START);
         } else {
-            if(currentContext == null){
-                currentContext = this;
-            }else if(((Activity)currentContext).getClass() == MainActivity.class){
+            if(currentActivity == null){
+                currentActivity = this;
+            }else if(currentActivity.getClass() == MainActivity.class){
                 Log.d(TAG, "go home");
                 Intent startMain = new Intent(Intent.ACTION_MAIN);
                 startMain.addCategory(Intent.CATEGORY_HOME);
@@ -123,12 +125,11 @@ public class DrawerActivity extends AppCompatActivity
         }
     }
 
-    protected String parseUBIT(String email){
-        return email.substring(0, email.indexOf("@"));
-    }
-
-    /* invoke sign out procedure, this signs out non-UB email user from firebaseAuth and GoogleSignInAPI */
+    /* invoke sign out procedure, this signs out current user from firebaseAuth and GoogleSignInAPI
+      *  it is also called if a non-UB email tried to sign in
+      * */
     protected void signOut(){
+        showProgressDialog();
         FirebaseAuth.getInstance().signOut();
         if(googleApiClient != null){
             /*
@@ -153,7 +154,7 @@ public class DrawerActivity extends AppCompatActivity
                 }
             });
         }
-
+        hideProgressDialog();
     }
 
     /* update drawer UI element according to user's sign up status */
@@ -192,9 +193,30 @@ public class DrawerActivity extends AppCompatActivity
         getSupportActionBar().show();
     }
 
+    protected void showProgressDialog() {
+        Log.d(TAG, "Show progress dialog in " + currentActivity.getClass().getSimpleName());
+        if (progressDialog == null) {
+            progressDialog = new ProgressDialog(currentActivity);
+            progressDialog.setMessage("Processing...");
+            progressDialog.setIndeterminate(true);
+        }
+
+        progressDialog.show();
+    }
+
+    protected void hideProgressDialog() {
+        if (progressDialog != null && progressDialog.isShowing()) {
+            progressDialog.dismiss();
+        }
+    }
+
     /* check if this account is UB email */
     protected boolean isUBEmail(GoogleSignInAccount account){
         return account != null && account.getEmail().contains("@buffalo.edu");
+    }
+
+    protected String parseUBIT(String email){
+        return email.substring(0, email.indexOf("@"));
     }
 
     @Override

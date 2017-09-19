@@ -1,4 +1,4 @@
-package cse442.courseradar;
+package UtilityClass;
 
 import java.util.HashMap;
 

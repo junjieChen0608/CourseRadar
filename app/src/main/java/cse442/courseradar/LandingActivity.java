@@ -5,23 +5,16 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.design.widget.CoordinatorLayout;
-import android.support.design.widget.NavigationView;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.auth.api.signin.GoogleSignInResult;
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthCredential;
@@ -59,12 +52,13 @@ public class LandingActivity extends DrawerActivity implements View.OnClickListe
 
     private Button btnSignInWithMyUB;
     private TextView tvAsGuest;
+
+    /* from which activity does LandingActivity start */
     private String sourceActivity;
 
     private FirebaseAuth firebaseAuth;
     private FirebaseUser firebaseUser;
     private DatabaseReference firebaseDB;
-    private ProgressDialog progressDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -97,7 +91,7 @@ public class LandingActivity extends DrawerActivity implements View.OnClickListe
     @Override
     protected void onStart() {
         Log.d(TAG, "onStart");
-        currentContext = this;
+        currentActivity = this;
         if(sourceActivity == null){
             sourceActivity = TAG;
         }
@@ -121,7 +115,7 @@ public class LandingActivity extends DrawerActivity implements View.OnClickListe
         startActivityForResult(signInIntent, RC_SIGN_IN);
     }
 
-    /* call back from sign in */
+    /* callback from sign in */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -157,7 +151,7 @@ public class LandingActivity extends DrawerActivity implements View.OnClickListe
                         if(task.isSuccessful()){
                             firebaseUser = firebaseAuth.getCurrentUser();
                             if(firebaseUser != null){
-                                /* check if this user is not in user database */
+                                /* check if this user is in user database */
                                 checkUserDatabase();
                                 /*
                                 * after database check, the behavior is as follows:
@@ -219,22 +213,6 @@ public class LandingActivity extends DrawerActivity implements View.OnClickListe
                 startActivity(new Intent(this, MainActivity.class).setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP));
             }
             finish();
-        }
-    }
-
-    public void showProgressDialog() {
-        if (progressDialog == null) {
-            progressDialog = new ProgressDialog(this);
-            progressDialog.setMessage("Processing...");
-            progressDialog.setIndeterminate(true);
-        }
-
-        progressDialog.show();
-    }
-
-    public void hideProgressDialog() {
-        if (progressDialog != null && progressDialog.isShowing()) {
-            progressDialog.dismiss();
         }
     }
 }
