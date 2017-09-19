@@ -186,13 +186,13 @@ public class LandingActivity extends DrawerActivity implements View.OnClickListe
     /* check if this user is in user database, if not just update it */
     private void checkUserDatabase(){
         final String userUBIT = parseUBIT(firebaseUser.getEmail());
-        firebaseDB.child(userUBIT).addListenerForSingleValueEvent(new ValueEventListener() {
+        firebaseDB.child(userUBIT).child("email").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 String userEmail = dataSnapshot.getValue(String.class);
                 if(userEmail == null){
                     Log.d(TAG, "checkUserDataBase: update user");
-                    firebaseDB.child(userUBIT).setValue(firebaseUser.getEmail());
+                    firebaseDB.child(userUBIT).child("email").setValue(firebaseUser.getEmail());
                 }else{
                     Log.d(TAG, "checkUserDataBase: user is already in database");
                 }
