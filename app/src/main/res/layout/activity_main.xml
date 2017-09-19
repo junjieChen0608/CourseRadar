@@ -6,15 +6,16 @@
     android:layout_height="match_parent"
     tools:context="cse442.courseradar.MainActivity">
 
-
-
-    <TextView
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:text="Main Activity"
-    app:layout_constraintBottom_toBottomOf="parent"
-    app:layout_constraintLeft_toLeftOf="parent"
-    app:layout_constraintRight_toRightOf="parent"
-    app:layout_constraintTop_toTopOf="parent" />
+    <SearchView
+        android:id="@+id/sv_search_bar"
+        android:layout_width="@dimen/major_btn_width"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="132dp"
+        android:queryHint="@string/search_hint"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:layout_constraintLeft_creator="1"
+        tools:layout_constraintTop_creator="1"
+        android:layout_marginStart="30dp"
+        app:layout_constraintLeft_toLeftOf="parent" />
 
 </android.support.constraint.ConstraintLayout>

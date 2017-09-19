@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -44,6 +45,7 @@ public class DrawerActivity extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setRequestedOrientation (ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         setContentView(R.layout.activity_drawer);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -174,7 +176,7 @@ public class DrawerActivity extends AppCompatActivity
             navigationView.inflateMenu(R.menu.drawer_signed_in);
         }else{
             Log.d(TAG, "upated as signed out");
-            tvUserName.setText("Guset");
+            tvUserName.setText(R.string.guest);
             tvUserEmail.setText("");
             navigationView.getMenu().clear();
             navigationView.inflateMenu(R.menu.drawer_signed_out);
