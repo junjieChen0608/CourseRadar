@@ -13,10 +13,10 @@ public class instructorData {
 
     public instructorData(){}
 
-    public instructorData(HashMap<String, HashMap<String, String>> inputData1, String inputData2, HashMap<String, HashMap<String, String>> inputData3){
-        courses= inputData1;
-        email= inputData2;
-        reviews= inputData3;
+    public instructorData(HashMap<String, HashMap<String, String>> remoteCourses, String remoteEmail, HashMap<String, HashMap<String, String>> remoteReviews){
+        courses= remoteCourses;
+        email= remoteEmail;
+        reviews= remoteReviews;
     }
 
     @Override
