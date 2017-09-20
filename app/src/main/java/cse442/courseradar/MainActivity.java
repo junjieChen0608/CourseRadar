@@ -13,6 +13,7 @@ public class MainActivity extends DrawerActivity implements SearchView.OnQueryTe
 
     private static final String TAG = MainActivity.class.getSimpleName();
     private SearchView svSearchBar;
+    private TextView tvSearchResult;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -24,6 +25,7 @@ public class MainActivity extends DrawerActivity implements SearchView.OnQueryTe
         svSearchBar = (SearchView) findViewById(R.id.sv_search_bar);
         svSearchBar.setIconifiedByDefault(false);
         svSearchBar.setOnQueryTextListener(this);
+        tvSearchResult = (TextView) findViewById(R.id.tv_search_result);
     }
 
     @Override
@@ -40,7 +42,7 @@ public class MainActivity extends DrawerActivity implements SearchView.OnQueryTe
     @Override
     public boolean onQueryTextSubmit(String s) {
         Log.d(TAG, "search this: " + s);
-
+        tvSearchResult.setText("So you want to search " + s + "?\nAnd here is result!!");
         return false;
     }
 
