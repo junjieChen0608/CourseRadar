@@ -119,9 +119,14 @@ public class LandingActivity extends DrawerActivity implements View.OnClickListe
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if(requestCode == RC_SIGN_IN){
-            GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
-            handleSignInResult(result);
+        if(resultCode == RESULT_OK){
+            if(requestCode == RC_SIGN_IN){
+                GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
+                handleSignInResult(result);
+            }
+        }else{
+            Log.d(TAG, "result code is not OK");
+            Toast.makeText(this, "Please check if you have Internet access", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -137,6 +142,8 @@ public class LandingActivity extends DrawerActivity implements View.OnClickListe
                 /* sign out this non-UB email google account */
                 signOut();
             }
+        }else {
+            Log.d(TAG, "Sign in result: failed");
         }
     }
 
