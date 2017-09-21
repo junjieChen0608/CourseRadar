@@ -9,7 +9,7 @@ repository and take a look at our code, but you won't be able to interact with o
 ## For Users
 Our app now supports Android 5.0.0(Lollipop) to 8.0.0(Oreo), since this prototype is not deployed on Google Play Store,
 please download the APK file from the link below:
-https://firebasestorage.googleapis.com/v0/b/courseradar.appspot.com/o/CourseRadar-Prototype.apk?alt=media&token=ce9bc7c9-e1fb-4562-8947-a7bfa250470b
+https://firebasestorage.googleapis.com/v0/b/courseradar.appspot.com/o/CourseRadar-Prototype.apk?alt=media&token=f66fadda-766d-4915-87cb-395c3edbf7f7
  
 NOTE: if your smartphone asks for permission to install APK from unknown sources, please grant permission to proceed. 
 
