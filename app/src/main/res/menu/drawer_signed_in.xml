@@ -9,7 +9,7 @@
         android:title="My reviews" />
     <item
         android:id="@+id/nav_mentioned_me"
-        android:title="Mentioned me(Coming soon)" />
+        android:title="Mentioned me(For instructors)" />
     <item
         android:id="@+id/nav_sign_out"
         android:title="Sign out" />
