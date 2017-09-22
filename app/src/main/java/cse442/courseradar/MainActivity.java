@@ -42,7 +42,10 @@ public class MainActivity extends DrawerActivity implements SearchView.OnQueryTe
     @Override
     public boolean onQueryTextSubmit(String s) {
         Log.d(TAG, "search this: " + s);
-        tvSearchResult.setText("So you want to search " + s + "?\nAnd here is result!!");
+        tvSearchResult.setText("Your search keyword: " + s + "\n\nIf you search course, a list of instructors who teach this course will be presented\n"
+                                + "\nIf you search instructor, a list of courses that he/she teach will be presented\n"
+                                + "\nYou can view each instructor's rating even if you are a guest, but you need to sign in to rate instructors\n"
+                                + "\nNOTE: Our database only recorded course schedule data of 2017-2018 academic year");
         return false;
     }
 
