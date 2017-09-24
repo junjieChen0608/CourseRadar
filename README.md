@@ -18,11 +18,11 @@ our repo, you won't be able to setup Firebase service dependencies and build it 
 ### For Users
 1, Make sure your have an Android smartphone, and it is running Android 5.0.0 or above.
 
-2, Please download the APK file from [here](https://firebasestorage.googleapis.com/v0/b/courseradar.appspot.com/o/CourseRadar-Prototype.apk?alt=media&token=f66fadda-766d-4915-87cb-395c3edbf7f7).
+2, Please download the APK file from [here](https://firebasestorage.googleapis.com/v0/b/courseradar.appspot.com/o/CourseRadar-Prototype.apk?alt=media&token=f66fadda-766d-4915-87cb-395c3edbf7f7) TO YOUR PHONE.
 
 3, During download, your browser may warn you about potential risk of downloading APK file from unknown source, just ignore it and continue downloading! We mean you no harm :)
 
-4, After APK is downloaded, you can go ahead and install our app, again, your smartphone's OS is gonna warn you not to install APK from unknown source, please grant permission to proceed
+4, After APK is downloaded, navigate to the directory where you save the APK file and install it, again, your smartphone's OS might request permission to install APK from unknown source, please grant permission to proceed
 
 5, You are all set! Our app is now installed! Enjoy!
 
