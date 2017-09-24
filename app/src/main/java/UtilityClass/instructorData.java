@@ -9,19 +9,24 @@ import java.util.HashMap;
 public class instructorData {
     public HashMap<String, HashMap<String, String>> courses;
     public String email;
+    public String firstName;
+    public String lastName;
     public HashMap<String, HashMap<String, String>> reviews;
 
     public instructorData(){}
 
-    public instructorData(HashMap<String, HashMap<String, String>> remoteCourses, String remoteEmail, HashMap<String, HashMap<String, String>> remoteReviews){
+    public instructorData(HashMap<String, HashMap<String, String>> remoteCourses, String remoteEmail, String remoteFirstName, String remoteLastName, HashMap<String, HashMap<String, String>> remoteReviews){
         courses= remoteCourses;
         email= remoteEmail;
+        firstName= remoteFirstName;
+        lastName= remoteLastName;
         reviews= remoteReviews;
     }
 
     @Override
     public String toString() {
         StringBuilder courseinfo= new StringBuilder();
+        courseinfo.append("name: ").append(firstName).append(" ").append(lastName).append("\n");
         courseinfo.append("email: ").append(email).append("\n").append("course info").append("\n");
 
         for (String course: courses.keySet()){
