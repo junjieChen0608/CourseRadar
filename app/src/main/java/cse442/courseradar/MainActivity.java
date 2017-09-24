@@ -8,12 +8,20 @@ import android.widget.SearchView;
 import android.widget.TextView;
 
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
+import UtilityClass.instructorData;
 
 public class MainActivity extends DrawerActivity implements SearchView.OnQueryTextListener{
 
     private static final String TAG = MainActivity.class.getSimpleName();
     private SearchView svSearchBar;
     private TextView tvSearchResult;
+    private DatabaseReference searchProfessor;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,6 +34,7 @@ public class MainActivity extends DrawerActivity implements SearchView.OnQueryTe
         svSearchBar.setIconifiedByDefault(false);
         svSearchBar.setOnQueryTextListener(this);
         tvSearchResult = (TextView) findViewById(R.id.tv_search_result);
+        searchProfessor= FirebaseDatabase.getInstance().getReference("instructors");
     }
 
     @Override
@@ -40,12 +49,31 @@ public class MainActivity extends DrawerActivity implements SearchView.OnQueryTe
     }
 
     @Override
-    public boolean onQueryTextSubmit(String s) {
-        Log.d(TAG, "search this: " + s);
-        tvSearchResult.setText("Your search keyword: " + s + "\n\nIf you search course, a list of instructors who teach this course will be presented\n"
-                                + "\nIf you search instructor, a list of courses that he/she teach will be presented\n"
-                                + "\nYou can view each instructor's rating even if you are a guest, but you need to sign in to rate instructors\n"
-                                + "\nNOTE: Our database only recorded course schedule data of 2017-2018 academic year");
+    public boolean onQueryTextSubmit(String input) {
+        Log.d(TAG, "search this: " + input);
+        if(input!= null && !input.isEmpty()){
+            input= input.toUpperCase();
+            searchProfessor.orderByChild("firstName").equalTo(input).addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    Iterable<DataSnapshot> list = dataSnapshot.getChildren();
+                    for (DataSnapshot s : list) {
+                        Log.d("ins", s.getKey());
+                        instructorData data = s.getValue(instructorData.class);
+                        if (data != null) {
+
+                        } else {
+                            Log.d("onDataChange", "not found");
+                        }
+                    }
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+                    Log.d("onCancelled", "activited");
+                }
+            });
+        }
         return false;
     }
 
