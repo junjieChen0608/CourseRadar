@@ -19,9 +19,22 @@ import cse442.courseradar.R;
 
 public class InstructorDataAdapter extends ArrayAdapter<instructorData> {
 
+    /**
+     *
+     * @param context
+     * @param pps:
+     */
     public InstructorDataAdapter(Activity context, ArrayList<instructorData> pps) {
         super(context, 0, pps);
     }
+
+    /**
+     *
+     * @param position
+     * @param convertView
+     * @param parent
+     * @return
+     */
 
     @NonNull
     @Override
@@ -29,20 +42,27 @@ public class InstructorDataAdapter extends ArrayAdapter<instructorData> {
 
 
         View listItemView = convertView;
+
+        // we have to inflate a instructor_data_list_item when ther eis no view avaliable
         if (listItemView == null) {
             listItemView = LayoutInflater.from(getContext()).inflate(R.layout.instructor_data_list_item, parent, false);
         }
 
         instructorData currentInstData = getItem(position);
 
+
+        // show instructor's full name, currently first name + last name
         TextView nameTextView = (TextView) listItemView.findViewById(R.id.tw_name);
 
         nameTextView.setText(currentInstData.getName());
 
 
+        // show instructor's email
         TextView emailTextView = (TextView) listItemView.findViewById(R.id.tw_email);
 
         emailTextView.setText(currentInstData.getEmail());
+
+        // later it will be great if we could show profile photo of each instructor.
 
         return listItemView;
     }

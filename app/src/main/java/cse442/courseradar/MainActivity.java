@@ -64,6 +64,7 @@ public class MainActivity extends DrawerActivity implements SearchView.OnQueryTe
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     Iterable<DataSnapshot> list = dataSnapshot.getChildren();
 
+                    // initialize ArrayList to store all instructorData
                     ArrayList<instructorData> instructorDataList = new ArrayList<instructorData>();
 
                     for (DataSnapshot s : list) {
@@ -80,10 +81,9 @@ public class MainActivity extends DrawerActivity implements SearchView.OnQueryTe
                     }
 
 
+                    // show all founded instructorData to list view
                     InstructorDataAdapter instructorDataAdapter = new InstructorDataAdapter(MainActivity.this, instructorDataList);
-
                     ListView listView = (ListView) findViewById(R.id.lw_instructorData);
-
                     listView.setAdapter(instructorDataAdapter);
 
                 }
