@@ -3,20 +3,26 @@ package cse442.courseradar;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -30,8 +36,16 @@ import com.google.android.gms.common.api.Status;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
+import java.io.File;
+import java.io.IOException;
+
 public class DrawerActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.OnConnectionFailedListener {
+    public static final int REQUEST_CAMERA = 1;
+    public static final int REQUEST_ALBUM = 2;
+    public static final int REQUEST_CROP = 3;
+    private ImageButton profilePicture;
+    private File imageFile;
 
     private static final String TAG = DrawerActivity.class.getSimpleName();
     protected NavigationView navigationView;
@@ -49,6 +63,7 @@ public class DrawerActivity extends AppCompatActivity
         setContentView(R.layout.activity_drawer);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        profilePicture = (ImageButton) findViewById(R.id.iv_user_profile_photo);
 
         drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -226,4 +241,85 @@ public class DrawerActivity extends AppCompatActivity
         Log.d(TAG, "onConnectionFailed:" + connectionResult);
         Toast.makeText(this, "Google Play Services error.", Toast.LENGTH_SHORT).show();
     }
+
+    /* setup alertdialog for imagebutton */
+    public void onClickPicker(View v) {
+        new AlertDialog.Builder(this)
+                .setTitle("Select")
+                .setItems(new String[]{"Camera", "Album"}, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        if (i == 0) {
+                            selectCamera();
+                        } else {
+                            selectAlbum();
+                        }
+                    }
+                })
+                .create()
+                .show();
+    }
+
+    /*invoke camera from seclecting alertdialog */
+    private void selectCamera() {
+        createImageFile();
+        if (!imageFile.exists()) {
+            return;
+        }
+        Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(imageFile));
+        startActivityForResult(cameraIntent, REQUEST_CAMERA);
+    }
+
+    /*invoke album from slecting alertdialog */
+    private void selectAlbum() {
+        Intent albumIntent = new Intent(Intent.ACTION_PICK);
+        albumIntent.setData(MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        startActivityForResult(albumIntent, REQUEST_ALBUM);
+    }
+
+    private void cropImage(Uri uri){
+        Intent intent = new Intent("com.android.camera.action.CROP");
+        intent.setDataAndType(uri, "UNKNOWN_PICTURE");
+        intent.putExtra("crop", "true");
+        intent.putExtra("aspectX", 1);
+        intent.putExtra("aspectY", 1);
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(imageFile));
+        startActivityForResult(intent, REQUEST_CROP);
+    }
+    private void createImageFile() {
+        imageFile = new File(Environment.getExternalStorageDirectory(), System.currentTimeMillis() + ".jpg");
+        try {
+            imageFile.createNewFile();
+        } catch (IOException e) {
+            e.printStackTrace();
+            Toast.makeText(this, "Error", Toast.LENGTH_SHORT).show();
+        }
+    }
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (RESULT_OK != resultCode) {
+            return;
+        }
+        switch (requestCode) {
+            case REQUEST_CAMERA:
+                cropImage(Uri.fromFile(imageFile));
+                break;
+            case REQUEST_ALBUM:
+                createImageFile();
+                if (!imageFile.exists()) {
+                    return;
+                }
+                Uri uri = data.getData();
+                if (uri != null) {
+                    cropImage(uri);
+                }
+                break;
+            case REQUEST_CROP:
+                profilePicture.setImageURI(Uri.fromFile(imageFile));
+                break;
+        }
+    }
+
 }
