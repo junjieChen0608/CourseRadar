@@ -8,9 +8,9 @@
 
     <SearchView
         android:id="@+id/sv_search_bar"
-        android:layout_width="@dimen/major_btn_width"
+        android:layout_width="300dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="132dp"
+        android:layout_marginTop="64dp"
         android:queryHint="@string/search_hint"
         app:layout_constraintTop_toTopOf="parent"
         tools:layout_constraintLeft_creator="1"
@@ -19,6 +19,7 @@
         app:layout_constraintLeft_toLeftOf="parent" />
 
     <TextView
+        android:visibility="gone"
         android:id="@+id/tv_search_result"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -28,6 +29,17 @@
         android:text=""
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/sv_search_bar" />
+        app:layout_constraintTop_toBottomOf="@+id/sv_search_bar"
+        app:layout_constraintBottom_toTopOf="@+id/lw_instructorData"
+        android:layout_marginStart="32dp"
+        android:layout_marginEnd="32dp" />
+
+    <ListView
+        android:id="@+id/lw_instructorData"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/sv_search_bar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
 
 </android.support.constraint.ConstraintLayout>

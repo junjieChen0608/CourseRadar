@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.ListView;
 import android.widget.SearchView;
 import android.widget.TextView;
 
@@ -14,6 +15,10 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import UtilityClass.InstructorDataAdapter;
 import UtilityClass.instructorData;
 
 public class MainActivity extends DrawerActivity implements SearchView.OnQueryTextListener{
@@ -22,6 +27,7 @@ public class MainActivity extends DrawerActivity implements SearchView.OnQueryTe
     private SearchView svSearchBar;
     private TextView tvSearchResult;
     private DatabaseReference searchProfessor;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,15 +63,29 @@ public class MainActivity extends DrawerActivity implements SearchView.OnQueryTe
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     Iterable<DataSnapshot> list = dataSnapshot.getChildren();
+
+                    ArrayList<instructorData> instructorDataList = new ArrayList<instructorData>();
+
                     for (DataSnapshot s : list) {
                         Log.d("ins", s.getKey());
                         instructorData data = s.getValue(instructorData.class);
+
+
                         if (data != null) {
+                            instructorDataList.add(data);
 
                         } else {
                             Log.d("onDataChange", "not found");
                         }
                     }
+
+
+                    InstructorDataAdapter instructorDataAdapter = new InstructorDataAdapter(MainActivity.this, instructorDataList);
+
+                    ListView listView = (ListView) findViewById(R.id.lw_instructorData);
+
+                    listView.setAdapter(instructorDataAdapter);
+
                 }
 
                 @Override
