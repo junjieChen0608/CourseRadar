@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -13,6 +14,7 @@ import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -23,6 +25,7 @@ import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -35,16 +38,23 @@ import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.makeramen.roundedimageview.RoundedImageView;
 
 import java.io.File;
 import java.io.IOException;
 
 public class DrawerActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.OnConnectionFailedListener {
+
     public static final int REQUEST_CAMERA = 1;
     public static final int REQUEST_ALBUM = 2;
     public static final int REQUEST_CROP = 3;
-    private ImageButton profilePicture;
+    private static final int REQUEST_EXTERNAL_STORAGE = 1;
+    private static String[] PERMISSIONS_STORAGE = {
+            android.Manifest.permission.READ_EXTERNAL_STORAGE,
+            android.Manifest.permission.WRITE_EXTERNAL_STORAGE
+    };
+    private RoundedImageView ivProfilePicture;
     private File imageFile;
 
     private static final String TAG = DrawerActivity.class.getSimpleName();
@@ -63,7 +73,6 @@ public class DrawerActivity extends AppCompatActivity
         setContentView(R.layout.activity_drawer);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        profilePicture = (ImageButton) findViewById(R.id.iv_user_profile_photo);
 
         drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -121,7 +130,7 @@ public class DrawerActivity extends AppCompatActivity
      * this is a workaround to avoid signing user out if the app is cleaned from memory or this activity is destroyed */
     @Override
     public void onBackPressed() {
-
+        ivProfilePicture = (RoundedImageView) findViewById(R.id.iv_user_profile_photo);
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             Log.d(TAG, "close window");
@@ -178,6 +187,7 @@ public class DrawerActivity extends AppCompatActivity
     protected void updateDrawerUI(FirebaseUser user){
         Log.d(TAG, "upating UI...");
         View headerView = navigationView.getHeaderView(0);
+        ivProfilePicture = (RoundedImageView) findViewById(R.id.iv_user_profile_photo);
         TextView tvUserName = (TextView) headerView.findViewById(R.id.tv_user_name);
         TextView tvUserEmail = (TextView) headerView.findViewById(R.id.tv_user_email);
         if(tvUserName == null || tvUserEmail == null){
@@ -243,7 +253,7 @@ public class DrawerActivity extends AppCompatActivity
     }
 
     /* setup alertdialog for imagebutton */
-    public void onClickPicker(View v) {
+    public void onClickAvatar(View v) {
         new AlertDialog.Builder(this)
                 .setTitle("Select")
                 .setItems(new String[]{"Camera", "Album"}, new DialogInterface.OnClickListener() {
@@ -274,22 +284,33 @@ public class DrawerActivity extends AppCompatActivity
     /*invoke album from slecting alertdialog */
     private void selectAlbum() {
         Intent albumIntent = new Intent(Intent.ACTION_PICK);
-        albumIntent.setData(MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        albumIntent.setDataAndType(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, "image/*");
         startActivityForResult(albumIntent, REQUEST_ALBUM);
     }
 
     private void cropImage(Uri uri){
         Intent intent = new Intent("com.android.camera.action.CROP");
-        intent.setDataAndType(uri, "UNKNOWN_PICTURE");
+        intent.setDataAndType(uri, "image/*");
         intent.putExtra("crop", "true");
         intent.putExtra("aspectX", 1);
         intent.putExtra("aspectY", 1);
         intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(imageFile));
         startActivityForResult(intent, REQUEST_CROP);
     }
+
     private void createImageFile() {
-        imageFile = new File(Environment.getExternalStorageDirectory(), System.currentTimeMillis() + ".jpg");
+        imageFile = new File(Environment.getExternalStorageDirectory(), System.currentTimeMillis() + ".png");
         try {
+            int permission = ActivityCompat.checkSelfPermission(DrawerActivity.this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE);
+            if(permission != PackageManager.PERMISSION_GRANTED){
+                ActivityCompat.requestPermissions(
+                        DrawerActivity.this,
+                        PERMISSIONS_STORAGE,
+                        REQUEST_EXTERNAL_STORAGE
+
+                );
+            }
+
             imageFile.createNewFile();
         } catch (IOException e) {
             e.printStackTrace();
@@ -317,7 +338,8 @@ public class DrawerActivity extends AppCompatActivity
                 }
                 break;
             case REQUEST_CROP:
-                profilePicture.setImageURI(Uri.fromFile(imageFile));
+                Log.d(TAG, "is profile pic button null ? " + String.valueOf(ivProfilePicture == null));
+                ivProfilePicture.setImageURI(Uri.fromFile(imageFile));
                 break;
         }
     }
