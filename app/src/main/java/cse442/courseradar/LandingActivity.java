@@ -217,7 +217,7 @@ public class LandingActivity extends DrawerActivity implements View.OnClickListe
             /* if this user come from other activity and clicked proceed as guest, just finish this activity without redirecting */
             Log.d(TAG, "sourceActivity: " + sourceActivity);
             if (sourceActivity.equals(TAG)){
-                startActivity(new Intent(this, MainActivity.class).setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP));
+                startActivity(new Intent(this, MainActivity.class).setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT));
             }
             finish();
         }

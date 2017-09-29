@@ -54,7 +54,7 @@ public class DrawerActivity extends AppCompatActivity
             android.Manifest.permission.READ_EXTERNAL_STORAGE,
             android.Manifest.permission.WRITE_EXTERNAL_STORAGE
     };
-    private RoundedImageView ivProfilePicture;
+    protected RoundedImageView ivProfilePicture;
     private File imageFile;
 
     private static final String TAG = DrawerActivity.class.getSimpleName();
@@ -130,7 +130,6 @@ public class DrawerActivity extends AppCompatActivity
      * this is a workaround to avoid signing user out if the app is cleaned from memory or this activity is destroyed */
     @Override
     public void onBackPressed() {
-        ivProfilePicture = (RoundedImageView) findViewById(R.id.iv_user_profile_photo);
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             Log.d(TAG, "close window");
@@ -157,6 +156,8 @@ public class DrawerActivity extends AppCompatActivity
     protected void signOut(){
         showProgressDialog();
         FirebaseAuth.getInstance().signOut();
+
+
         if(googleApiClient != null){
             /*
             must check if google API client is connected to successfully sign user out
@@ -170,6 +171,9 @@ public class DrawerActivity extends AppCompatActivity
                         public void onResult(@NonNull Status status) {
                             Log.d(TAG, "After sign out, is this google API client connected ? " + googleApiClient.isConnected());
                             updateDrawerUI(null);
+
+                            /* set the avatar to default */
+                            ivProfilePicture.setImageDrawable(getDrawable(R.drawable.pic_holder));
                         }
                     });
                 }
@@ -187,9 +191,12 @@ public class DrawerActivity extends AppCompatActivity
     protected void updateDrawerUI(FirebaseUser user){
         Log.d(TAG, "upating UI...");
         View headerView = navigationView.getHeaderView(0);
-        ivProfilePicture = (RoundedImageView) findViewById(R.id.iv_user_profile_photo);
         TextView tvUserName = (TextView) headerView.findViewById(R.id.tv_user_name);
         TextView tvUserEmail = (TextView) headerView.findViewById(R.id.tv_user_email);
+
+        /* define imageview for avatar */
+        ivProfilePicture = (RoundedImageView) findViewById(R.id.iv_user_profile_photo);
+
         if(tvUserName == null || tvUserEmail == null){
             Log.wtf("update drawer UI", "This should never happen");
         }
@@ -252,22 +259,28 @@ public class DrawerActivity extends AppCompatActivity
         Toast.makeText(this, "Google Play Services error.", Toast.LENGTH_SHORT).show();
     }
 
-    /* setup alertdialog for imagebutton */
+    /* setup alertdialog for imageView */
     public void onClickAvatar(View v) {
-        new AlertDialog.Builder(this)
-                .setTitle("Select")
-                .setItems(new String[]{"Camera", "Album"}, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        if (i == 0) {
-                            selectCamera();
-                        } else {
-                            selectAlbum();
+        /* check if user is sign in/out to enable/disable alertdialog */
+        if(FirebaseAuth.getInstance().getCurrentUser() != null){
+            new AlertDialog.Builder(this)
+                    .setTitle("Select")
+                    .setItems(new String[]{"Camera", "Album"}, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            if (i == 0) {
+                                selectCamera();
+                            } else {
+                                selectAlbum();
+                            }
                         }
-                    }
-                })
-                .create()
-                .show();
+                    })
+                    .create()
+                    .show();
+        }
+        else{
+            Log.wtf("onClickAvatar","user signed out");
+        }
     }
 
     /*invoke camera from seclecting alertdialog */
