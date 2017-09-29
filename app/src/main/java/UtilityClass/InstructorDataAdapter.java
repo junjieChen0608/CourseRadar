@@ -43,7 +43,7 @@ public class InstructorDataAdapter extends ArrayAdapter<instructorData> {
 
         View listItemView = convertView;
 
-        // we have to inflate a instructor_data_list_item when ther eis no view avaliable
+        // we have to inflate a instructor_data_list_item when there is no view available
         if (listItemView == null) {
             listItemView = LayoutInflater.from(getContext()).inflate(R.layout.instructor_data_list_item, parent, false);
         }

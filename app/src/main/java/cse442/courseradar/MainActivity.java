@@ -5,6 +5,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.SearchView;
 import android.widget.TextView;
 
@@ -16,7 +17,6 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import UtilityClass.InstructorDataAdapter;
 import UtilityClass.instructorData;
@@ -25,8 +25,11 @@ public class MainActivity extends DrawerActivity implements SearchView.OnQueryTe
 
     private static final String TAG = MainActivity.class.getSimpleName();
     private SearchView svSearchBar;
-    private TextView tvSearchResult;
     private DatabaseReference searchProfessor;
+    private ProgressBar pbWait;
+    private ListView lvSearchResultList;
+    private TextView tvNoResult;
+    private boolean noResult;
 
 
     @Override
@@ -39,7 +42,10 @@ public class MainActivity extends DrawerActivity implements SearchView.OnQueryTe
         svSearchBar = (SearchView) findViewById(R.id.sv_search_bar);
         svSearchBar.setIconifiedByDefault(false);
         svSearchBar.setOnQueryTextListener(this);
-        tvSearchResult = (TextView) findViewById(R.id.tv_search_result);
+        pbWait = (ProgressBar) findViewById(R.id.pb_wait);
+        lvSearchResultList = (ListView) findViewById(R.id.lv_instructorData);
+        tvNoResult = (TextView) findViewById(R.id.tv_no_result);
+        noResult = true;
         searchProfessor= FirebaseDatabase.getInstance().getReference("instructors");
     }
 
@@ -56,6 +62,8 @@ public class MainActivity extends DrawerActivity implements SearchView.OnQueryTe
 
     @Override
     public boolean onQueryTextSubmit(String input) {
+        final String keyword = input;
+        showProgressBar();
         Log.d(TAG, "search this: " + input);
         if(input!= null && !input.isEmpty()){
             input= input.toUpperCase();
@@ -80,11 +88,12 @@ public class MainActivity extends DrawerActivity implements SearchView.OnQueryTe
                         }
                     }
 
+                    noResult = instructorDataList.isEmpty();
+                    hideProgressBar(keyword);
 
                     // show all founded instructorData to list view
                     InstructorDataAdapter instructorDataAdapter = new InstructorDataAdapter(MainActivity.this, instructorDataList);
-                    ListView listView = (ListView) findViewById(R.id.lw_instructorData);
-                    listView.setAdapter(instructorDataAdapter);
+                    lvSearchResultList.setAdapter(instructorDataAdapter);
 
                 }
 
@@ -101,5 +110,27 @@ public class MainActivity extends DrawerActivity implements SearchView.OnQueryTe
     public boolean onQueryTextChange(String s) {
         /* track keywords change, maybe useful for search suggestion */
         return false;
+    }
+
+    /*hide previously shown result list or no result text view, then show progress bar*/
+    private void showProgressBar(){
+        if(noResult){
+            tvNoResult.setVisibility(View.GONE);
+        }else {
+            lvSearchResultList.setVisibility(View.GONE);
+        }
+        pbWait.setVisibility(View.VISIBLE);
+    }
+
+    /*show no search result or result list, then hide progress bar*/
+    private void hideProgressBar(String keyword){
+        if(noResult){
+            String formatKeyword = "\"" + keyword + "\"";
+            tvNoResult.setText(getString(R.string.no_result_found_for) + " " +formatKeyword);
+            tvNoResult.setVisibility(View.VISIBLE);
+        }else{
+            lvSearchResultList.setVisibility(View.VISIBLE);
+        }
+        pbWait.setVisibility(View.GONE);
     }
 }
