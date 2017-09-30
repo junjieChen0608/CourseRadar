@@ -1,13 +1,17 @@
 package cse442.courseradar;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.SearchView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
@@ -31,6 +35,9 @@ public class MainActivity extends DrawerActivity implements SearchView.OnQueryTe
     private TextView tvNoResult;
     private boolean noResult;
 
+    /*Rate activity prototype*/
+    private Button btnRateMe;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,16 +50,35 @@ public class MainActivity extends DrawerActivity implements SearchView.OnQueryTe
         svSearchBar.setIconifiedByDefault(false);
         svSearchBar.setOnQueryTextListener(this);
         pbWait = (ProgressBar) findViewById(R.id.pb_wait);
+
+        /*TODO implement: initialize a new fragment when click listview item*/
         lvSearchResultList = (ListView) findViewById(R.id.lv_instructorData);
+        lvSearchResultList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                Toast.makeText(MainActivity.this, ((TextView)view.findViewById(R.id.tv_name)).getText().toString() + ((TextView)view.findViewById(R.id.tv_email)).getText(),
+                        Toast.LENGTH_SHORT).show();
+            }
+        });
+
         tvNoResult = (TextView) findViewById(R.id.tv_no_result);
         noResult = true;
         searchProfessor= FirebaseDatabase.getInstance().getReference("instructors");
+
+        btnRateMe = (Button) findViewById(R.id.btn_rate_me);
+        btnRateMe.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startActivity(new Intent(MainActivity.this, RatingActivity.class).setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT));
+            }
+        });
     }
 
     @Override
     protected void onStart() {
         super.onStart();
         Log.wtf("onStart","MainActivity onStart");
+        /*mark current activity as this activity*/
         currentActivity = this;
         if(FirebaseAuth.getInstance().getCurrentUser() == null){
             Log.wtf(TAG + " onStart", "user is signed out");
@@ -62,6 +88,7 @@ public class MainActivity extends DrawerActivity implements SearchView.OnQueryTe
 
     @Override
     public boolean onQueryTextSubmit(String input) {
+        input = input.trim();
         final String keyword = input;
         showProgressBar();
         Log.d(TAG, "search this: " + input);
@@ -79,7 +106,6 @@ public class MainActivity extends DrawerActivity implements SearchView.OnQueryTe
                         Log.d("ins", s.getKey());
                         instructorData data = s.getValue(instructorData.class);
 
-
                         if (data != null) {
                             instructorDataList.add(data);
 
@@ -94,7 +120,6 @@ public class MainActivity extends DrawerActivity implements SearchView.OnQueryTe
                     // show all founded instructorData to list view
                     InstructorDataAdapter instructorDataAdapter = new InstructorDataAdapter(MainActivity.this, instructorDataList);
                     lvSearchResultList.setAdapter(instructorDataAdapter);
-
                 }
 
                 @Override

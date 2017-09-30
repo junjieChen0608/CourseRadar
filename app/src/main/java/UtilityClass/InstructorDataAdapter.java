@@ -52,13 +52,13 @@ public class InstructorDataAdapter extends ArrayAdapter<instructorData> {
 
 
         // show instructor's full name, currently first name + last name
-        TextView nameTextView = (TextView) listItemView.findViewById(R.id.tw_name);
+        TextView nameTextView = (TextView) listItemView.findViewById(R.id.tv_name);
 
         nameTextView.setText(currentInstData.getName());
 
 
         // show instructor's email
-        TextView emailTextView = (TextView) listItemView.findViewById(R.id.tw_email);
+        TextView emailTextView = (TextView) listItemView.findViewById(R.id.tv_email);
 
         emailTextView.setText(currentInstData.getEmail());
 

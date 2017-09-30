@@ -20,13 +20,13 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
         <TextView
-            android:id="@+id/tw_name"
+            android:id="@+id/tv_name"
             tools:text="name"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
 
         <TextView
-            android:id="@+id/tw_email"
+            android:id="@+id/tv_email"
             tools:text="email"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
