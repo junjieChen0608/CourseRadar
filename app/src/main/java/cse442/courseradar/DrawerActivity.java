@@ -24,8 +24,6 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -55,7 +53,7 @@ public class DrawerActivity extends AppCompatActivity
             android.Manifest.permission.WRITE_EXTERNAL_STORAGE
     };
     protected RoundedImageView ivProfilePicture;
-    private File imageFile;
+    protected File imageFile;
 
     private static final String TAG = DrawerActivity.class.getSimpleName();
     protected NavigationView navigationView;
@@ -104,6 +102,7 @@ public class DrawerActivity extends AppCompatActivity
         // Handle navigation view item clicks here.
         int id = item.getItemId();
         // TODO implement click menu item logic
+
         switch (id){
             case R.id.nav_sign_in:
                 Intent signInIntent = new Intent(currentActivity, LandingActivity.class).setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
@@ -130,6 +129,7 @@ public class DrawerActivity extends AppCompatActivity
      * this is a workaround to avoid signing user out if the app is cleaned from memory or this activity is destroyed */
     @Override
     public void onBackPressed() {
+
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             Log.d(TAG, "close window");
@@ -156,8 +156,6 @@ public class DrawerActivity extends AppCompatActivity
     protected void signOut(){
         showProgressDialog();
         FirebaseAuth.getInstance().signOut();
-
-
         if(googleApiClient != null){
             /*
             must check if google API client is connected to successfully sign user out
@@ -196,6 +194,35 @@ public class DrawerActivity extends AppCompatActivity
 
         /* define imageview for avatar */
         ivProfilePicture = (RoundedImageView) findViewById(R.id.iv_user_profile_photo);
+        Log.wtf("check define status", "the function has call");
+        if(ivProfilePicture != null){
+            Log.wtf("check null pointer", "why imageview is null");
+            ivProfilePicture.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                /* check if user is sign in/out to enable/disable alertdialog */
+                    if(FirebaseAuth.getInstance().getCurrentUser() != null){
+                        new AlertDialog.Builder(DrawerActivity.this)
+                                .setTitle("Select")
+                                .setItems(new String[]{"Camera", "Album"}, new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialogInterface, int i) {
+                                        if (i == 0) {
+                                            selectCamera();
+                                        } else {
+                                            selectAlbum();
+                                        }
+                                    }
+                                })
+                                .create()
+                                .show();
+                    }
+                    else{
+                        Log.wtf("onClickAvatar","user signed out");
+                    }
+                }
+            });
+        }
 
         if(tvUserName == null || tvUserEmail == null){
             Log.wtf("update drawer UI", "This should never happen");
@@ -259,32 +286,8 @@ public class DrawerActivity extends AppCompatActivity
         Toast.makeText(this, "Google Play Services error.", Toast.LENGTH_SHORT).show();
     }
 
-    /* setup alertdialog for imageView */
-    public void onClickAvatar(View v) {
-        /* check if user is sign in/out to enable/disable alertdialog */
-        if(FirebaseAuth.getInstance().getCurrentUser() != null){
-            new AlertDialog.Builder(this)
-                    .setTitle("Select")
-                    .setItems(new String[]{"Camera", "Album"}, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            if (i == 0) {
-                                selectCamera();
-                            } else {
-                                selectAlbum();
-                            }
-                        }
-                    })
-                    .create()
-                    .show();
-        }
-        else{
-            Log.wtf("onClickAvatar","user signed out");
-        }
-    }
-
     /*invoke camera from seclecting alertdialog */
-    private void selectCamera() {
+    protected void selectCamera() {
         createImageFile();
         if (!imageFile.exists()) {
             return;
@@ -295,13 +298,13 @@ public class DrawerActivity extends AppCompatActivity
     }
 
     /*invoke album from slecting alertdialog */
-    private void selectAlbum() {
+    protected void selectAlbum() {
         Intent albumIntent = new Intent(Intent.ACTION_PICK);
         albumIntent.setDataAndType(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, "image/*");
         startActivityForResult(albumIntent, REQUEST_ALBUM);
     }
 
-    private void cropImage(Uri uri){
+    protected void cropImage(Uri uri){
         Intent intent = new Intent("com.android.camera.action.CROP");
         intent.setDataAndType(uri, "image/*");
         intent.putExtra("crop", "true");
@@ -311,7 +314,7 @@ public class DrawerActivity extends AppCompatActivity
         startActivityForResult(intent, REQUEST_CROP);
     }
 
-    private void createImageFile() {
+    protected void createImageFile() {
         imageFile = new File(Environment.getExternalStorageDirectory(), System.currentTimeMillis() + ".png");
         try {
             int permission = ActivityCompat.checkSelfPermission(DrawerActivity.this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE);
