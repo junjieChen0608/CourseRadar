@@ -9,16 +9,21 @@
     android:orientation="vertical"
     android:theme="@style/ThemeOverlay.AppCompat.Dark">
 
-    <ImageView
-        android:id="@+id/iv_user_profile_photo"
+    <com.makeramen.roundedimageview.RoundedImageView
+        xmlns:app="http://schemas.android.com/apk/res-auto"
         android:layout_width="50dp"
         android:layout_height="50dp"
         android:layout_marginLeft="32dp"
         android:layout_marginStart="32dp"
         android:layout_marginTop="48dp"
+        android:id="@+id/iv_user_profile_photo"
+        android:src="@drawable/pic_holder"
+        android:scaleType="fitXY"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/pic_holder" />
+        app:riv_corner_radius="30dip"
+        app:riv_border_width="0dip"
+        app:riv_border_color="@color/colorPrimaryDark" />
 
     <TextView
         android:id="@+id/tv_user_name"
