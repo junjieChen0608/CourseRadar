@@ -10,6 +10,7 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.StrictMode;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -88,13 +89,12 @@ public class DrawerActivity extends AppCompatActivity
         View headerView = navigationView.getHeaderView(0);
         tvUserName = (TextView) headerView.findViewById(R.id.tv_user_name);
         tvUserEmail = (TextView) headerView.findViewById(R.id.tv_user_email);
-        /*TODO README: this is the proper way to initialize UI elements in drawer header view
-        * can you tell the difference?*/
         ivProfilePicture = (RoundedImageView) headerView.findViewById(R.id.iv_user_profile_photo);
         ivProfilePicture.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 /* check if user is sign in/out to enable/disable alertdialog */
+                verifyStoragePermissions(DrawerActivity.this);
                 if(FirebaseAuth.getInstance().getCurrentUser() != null){
                     new AlertDialog.Builder(DrawerActivity.this)
                             .setTitle("Select")
@@ -116,6 +116,9 @@ public class DrawerActivity extends AppCompatActivity
                 }
             }
         });
+
+        StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
+        StrictMode.setVmPolicy(builder.build());
 
         if(googleApiClient != null){
             Log.wtf(TAG, "google api client is created and connected ? " + googleApiClient.isConnected());
@@ -296,9 +299,6 @@ public class DrawerActivity extends AppCompatActivity
         }
         Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(imageFile));
-        /*TODO fix: android.os.FileUriExposedException is thrown here
-        * OS: Android 8.0.0
-        * Choose camera to capture avatar will reproduce this bug*/
         startActivityForResult(cameraIntent, REQUEST_CAMERA);
     }
 
@@ -322,22 +322,48 @@ public class DrawerActivity extends AppCompatActivity
     protected void createImageFile() {
         imageFile = new File(Environment.getExternalStorageDirectory(), System.currentTimeMillis() + ".png");
         try {
-            int permission = ActivityCompat.checkSelfPermission(DrawerActivity.this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE);
-            /*TODO optimize: use this callback "onRequestPermissionsResult" to handle the request result*/
-            if(permission != PackageManager.PERMISSION_GRANTED){
-                ActivityCompat.requestPermissions(
-                        DrawerActivity.this,
-                        PERMISSIONS_STORAGE,
-                        REQUEST_EXTERNAL_STORAGE
-                );
-            }
-
             imageFile.createNewFile();
         } catch (IOException e) {
             e.printStackTrace();
             Toast.makeText(this, "createImageFile error", Toast.LENGTH_SHORT).show();
         }
     }
+
+    public static void verifyStoragePermissions(Activity activity) {
+        // Check if we have write permission
+        int permission = ActivityCompat.checkSelfPermission(activity, android.Manifest.permission.WRITE_EXTERNAL_STORAGE);
+
+        if (permission != PackageManager.PERMISSION_GRANTED) {
+            // We don't have permission so prompt the user
+            ActivityCompat.requestPermissions(
+                    activity,
+                    PERMISSIONS_STORAGE,
+                    REQUEST_EXTERNAL_STORAGE
+            );
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case REQUEST_EXTERNAL_STORAGE: {
+                if (grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    Toast.makeText(this,
+                            "Permission is granted",
+                            Toast.LENGTH_SHORT).show();
+
+
+                } else {
+                    Toast.makeText(this,
+                            "Permission is denied",
+                            Toast.LENGTH_SHORT).show();
+                    super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+                }
+                return;
+            }
+        }
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
