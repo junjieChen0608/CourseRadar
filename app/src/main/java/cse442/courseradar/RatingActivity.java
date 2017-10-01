@@ -16,6 +16,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.HashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import UtilityClass.CourseRating;
 
@@ -76,29 +77,34 @@ public class RatingActivity extends AppCompatActivity {
                             "Comment: " + comment);
                 getRatingDatabase(RATINGS);
                 getRatingDatabase(INSTRUCTORS);
-                setRatingDatabase(RATINGS);
-                setRatingDatabase(INSTRUCTORS);
             }
         });
     }
 
     /*update rating to each database*/
     private void setRatingDatabase(final String whichDB){
+
         if(whichDB.equals(RATINGS)){
             // update this user's rating database
+            Log.d("setter", "setter called at " + whichDB);
             HashMap<String, Object> newRating = new HashMap<>();
             newRating.put("assignmentDifficulty", assignmentDiff);
             newRating.put("lectureQuality", lectureQuality);
             newRating.put("overallQuality", overallQuality);
             ratingDB.child(userUBIT).child(instructorName+"-"+courseID).updateChildren(newRating);
+            HashMap<String, Object> newComment = new HashMap<>();
+            newComment.put("comment", comment);
+            ratingDB.child(userUBIT).child(instructorName+"-"+courseID).updateChildren(newComment);
         }else{
             // update instructor's rating database
             if(userAssignmentDiff < 0){
+                Log.d("setter", "setter called at " + whichDB);
                 instructorOverallQuality += overallQuality;
                 instructorAssignmentDiff += assignmentDiff;
                 instructorLectureQuality += lectureQuality;
                 totalRatings++;
             }else{
+                Log.d("setter", "setter called at " + whichDB);
                 instructorOverallQuality = instructorOverallQuality - userOverallQuality + overallQuality;
                 instructorAssignmentDiff = instructorAssignmentDiff - userAssignmentDiff + assignmentDiff;
                 instructorLectureQuality = instructorLectureQuality - userLectureQuality + lectureQuality;
@@ -110,11 +116,16 @@ public class RatingActivity extends AppCompatActivity {
     private void updateInstructorRating(){
         CourseRating newRating = new CourseRating(instructorAssignmentDiff, instructorLectureQuality,instructorOverallQuality, totalRatings);
         instructorDB.child(instructorName).child("courses").child(courseID).updateChildren(newRating.toMap());
+        HashMap<String, Object> newComment = new HashMap<>();
+        newComment.put(userUBIT, comment);
+        instructorDB.child(instructorName).child("reviews").child(courseID).updateChildren(newComment);
     }
 
     /*get rating from each database*/
     private void getRatingDatabase(final String whichDB){
+
         ValueEventListener valueEventListener = new ValueEventListener() {
+
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if(dataSnapshot.exists()){
@@ -123,13 +134,16 @@ public class RatingActivity extends AppCompatActivity {
                     Log.d("onDataChange", "whichDB " + whichDB);
                     if(rating != null){
                         if(whichDB.equals(RATINGS)){
+                            Log.d("getter", "getter called at " + whichDB);
                             userOverallQuality = rating.overallQuality;
                             userLectureQuality = rating.lectureQuality;
                             userAssignmentDiff = rating.assignmentDifficulty;
                             Log.d("getRatingDatabase", "user rating:\n" + userOverallQuality + "\n" +
                                                             userLectureQuality + "\n" +
                                                             userAssignmentDiff + "\n");
+                            setRatingDatabase(RATINGS);
                         }else{
+                            Log.d("getter", "getter called at " + whichDB);
                             instructorOverallQuality = rating.overallQuality;
                             instructorLectureQuality = rating.lectureQuality;
                             instructorAssignmentDiff = rating.assignmentDifficulty;
@@ -137,6 +151,7 @@ public class RatingActivity extends AppCompatActivity {
                             Log.d("getRatingDatabase", "instructor rating:\n" + instructorOverallQuality + "\n" +
                                     instructorLectureQuality + "\n" +
                                     instructorAssignmentDiff + "\n");
+                            setRatingDatabase(INSTRUCTORS);
                         }
                     }else{
                         Log.d("onDataChange", "rating is null");
@@ -144,6 +159,7 @@ public class RatingActivity extends AppCompatActivity {
                 }else{
                     //this user never rated this course before
                     Log.d(TAG, "current user has no previous rating");
+                    setRatingDatabase(RATINGS);
                 }
             }
 
