@@ -345,9 +345,10 @@ public class DrawerActivity extends AppCompatActivity
 
     @Override
     public void onRequestPermissionsResult(int requestCode,String permissions[], int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         switch (requestCode) {
             case REQUEST_EXTERNAL_STORAGE: {
-                if (grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     Toast.makeText(this,
                             "Permission is granted",
                             Toast.LENGTH_SHORT).show();
@@ -357,7 +358,7 @@ public class DrawerActivity extends AppCompatActivity
                     Toast.makeText(this,
                             "Permission is denied",
                             Toast.LENGTH_SHORT).show();
-                    super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
                 }
                 return;
             }
