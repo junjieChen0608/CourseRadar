@@ -7,6 +7,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RatingBar;
+import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
@@ -79,6 +80,8 @@ public class RatingActivity extends AppCompatActivity {
                 /*fetch rating data from both user's and instructor's rating database*/
                 getRatingDatabase(RATINGS);
                 getRatingDatabase(INSTRUCTORS);
+                Toast.makeText(RatingActivity.this, "Your rating is submitted!!", Toast.LENGTH_SHORT).show();
+                finish();
             }
         });
     }
