@@ -94,8 +94,9 @@ public class DrawerActivity extends AppCompatActivity
             @Override
             public void onClick(View view) {
                 /* check if user is sign in/out to enable/disable alertdialog */
-                verifyStoragePermissions(DrawerActivity.this);
                 if(FirebaseAuth.getInstance().getCurrentUser() != null){
+                    /* verify if we have storage permission */
+                    verifyStoragePermissions(DrawerActivity.this);
                     new AlertDialog.Builder(DrawerActivity.this)
                             .setTitle("Select")
                             .setItems(new String[]{"Camera", "Album"}, new DialogInterface.OnClickListener() {
@@ -330,7 +331,7 @@ public class DrawerActivity extends AppCompatActivity
     }
 
     public static void verifyStoragePermissions(Activity activity) {
-        // Check if we have write permission
+        // Check if we have storage permission
         int permission = ActivityCompat.checkSelfPermission(activity, android.Manifest.permission.WRITE_EXTERNAL_STORAGE);
 
         if (permission != PackageManager.PERMISSION_GRANTED) {
