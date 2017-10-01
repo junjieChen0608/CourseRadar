@@ -7,7 +7,7 @@ import java.util.HashMap;
  */
 
 public class instructorData {
-    public HashMap<String, HashMap<String, String>> courses;
+    public HashMap<String, HashMap<String, Long>> courses;
     public String email;
     public String firstName;
     public String lastName;
@@ -15,7 +15,7 @@ public class instructorData {
 
     public instructorData(){}
 
-    public instructorData(HashMap<String, HashMap<String, String>> remoteCourses, String remoteEmail, String remoteFirstName, String remoteLastName, HashMap<String, HashMap<String, String>> remoteReviews){
+    public instructorData(HashMap<String, HashMap<String, Long>> remoteCourses, String remoteEmail, String remoteFirstName, String remoteLastName, HashMap<String, HashMap<String, String>> remoteReviews){
         courses= remoteCourses;
         email= remoteEmail;
         firstName= remoteFirstName;
@@ -31,7 +31,7 @@ public class instructorData {
 
         for (String course: courses.keySet()){
             courseinfo.append("\t").append(course).append('\n');
-            HashMap<String, String> qualityList= courses.get(course);
+            HashMap<String, Long> qualityList= courses.get(course);
             for(String singleQuality: qualityList.keySet()){
                 courseinfo.append("\t\t").append(singleQuality).append(":\t").append(qualityList.get(singleQuality)).append("\n");
             }
