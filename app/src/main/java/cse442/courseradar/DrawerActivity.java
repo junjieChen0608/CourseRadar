@@ -52,10 +52,13 @@ public class DrawerActivity extends AppCompatActivity
             android.Manifest.permission.READ_EXTERNAL_STORAGE,
             android.Manifest.permission.WRITE_EXTERNAL_STORAGE
     };
-    protected RoundedImageView ivProfilePicture;
-    protected File imageFile;
 
     private static final String TAG = DrawerActivity.class.getSimpleName();
+
+    protected RoundedImageView ivProfilePicture;
+    protected TextView tvUserName;
+    protected TextView tvUserEmail;
+    protected File imageFile;
     protected NavigationView navigationView;
     protected static GoogleApiClient googleApiClient;
     /* the universal drawer that shared among sub-classes */
@@ -80,6 +83,40 @@ public class DrawerActivity extends AppCompatActivity
 
         navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+
+        /*find the UI element in the drawer header and initialize them*/
+        View headerView = navigationView.getHeaderView(0);
+        tvUserName = (TextView) headerView.findViewById(R.id.tv_user_name);
+        tvUserEmail = (TextView) headerView.findViewById(R.id.tv_user_email);
+        /*TODO README: this is the proper way to initialize UI elements in drawer header view
+        * can you tell the difference?*/
+        ivProfilePicture = (RoundedImageView) headerView.findViewById(R.id.iv_user_profile_photo);
+        ivProfilePicture.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                /* check if user is sign in/out to enable/disable alertdialog */
+                if(FirebaseAuth.getInstance().getCurrentUser() != null){
+                    new AlertDialog.Builder(DrawerActivity.this)
+                            .setTitle("Select")
+                            .setItems(new String[]{"Camera", "Album"}, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialogInterface, int i) {
+                                    if (i == 0) {
+                                        selectCamera();
+                                    } else {
+                                        selectAlbum();
+                                    }
+                                }
+                            })
+                            .create()
+                            .show();
+                }
+                else{
+                    Log.wtf("onClickAvatar","user signed out");
+                }
+            }
+        });
+
         if(googleApiClient != null){
             Log.wtf(TAG, "google api client is created and connected ? " + googleApiClient.isConnected());
         }else{
@@ -101,8 +138,7 @@ public class DrawerActivity extends AppCompatActivity
     public boolean onNavigationItemSelected(MenuItem item) {
         // Handle navigation view item clicks here.
         int id = item.getItemId();
-        // TODO implement click menu item logic
-
+        // TODO implement: click menu item logic
         switch (id){
             case R.id.nav_sign_in:
                 Intent signInIntent = new Intent(currentActivity, LandingActivity.class).setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
@@ -169,9 +205,6 @@ public class DrawerActivity extends AppCompatActivity
                         public void onResult(@NonNull Status status) {
                             Log.d(TAG, "After sign out, is this google API client connected ? " + googleApiClient.isConnected());
                             updateDrawerUI(null);
-
-                            /* set the avatar to default */
-                            ivProfilePicture.setImageDrawable(getDrawable(R.drawable.pic_holder));
                         }
                     });
                 }
@@ -188,55 +221,24 @@ public class DrawerActivity extends AppCompatActivity
     /* update drawer UI element according to user's sign up status */
     protected void updateDrawerUI(FirebaseUser user){
         Log.d(TAG, "upating UI...");
-        View headerView = navigationView.getHeaderView(0);
-        TextView tvUserName = (TextView) headerView.findViewById(R.id.tv_user_name);
-        TextView tvUserEmail = (TextView) headerView.findViewById(R.id.tv_user_email);
-
-        /* define imageview for avatar */
-        ivProfilePicture = (RoundedImageView) findViewById(R.id.iv_user_profile_photo);
-        Log.wtf("check define status", "the function has call");
-        if(ivProfilePicture != null){
-            Log.wtf("check null pointer", "why imageview is null");
-            ivProfilePicture.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                /* check if user is sign in/out to enable/disable alertdialog */
-                    if(FirebaseAuth.getInstance().getCurrentUser() != null){
-                        new AlertDialog.Builder(DrawerActivity.this)
-                                .setTitle("Select")
-                                .setItems(new String[]{"Camera", "Album"}, new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialogInterface, int i) {
-                                        if (i == 0) {
-                                            selectCamera();
-                                        } else {
-                                            selectAlbum();
-                                        }
-                                    }
-                                })
-                                .create()
-                                .show();
-                    }
-                    else{
-                        Log.wtf("onClickAvatar","user signed out");
-                    }
-                }
-            });
-        }
 
         if(tvUserName == null || tvUserEmail == null){
             Log.wtf("update drawer UI", "This should never happen");
         }
         if(user != null){
-            Log.d(TAG, "upated as signed in");
+            Log.d(TAG, "upate UI as signed in status");
             tvUserName.setText(parseUBIT(user.getEmail()));
             tvUserEmail.setText(user.getEmail());
+            /*TODO implement: need to update the imageview here if this user already has avatar,
+            * need to interact with Firebase storage*/
             navigationView.getMenu().clear();
             navigationView.inflateMenu(R.menu.drawer_signed_in);
         }else{
-            Log.d(TAG, "upated as signed out");
+            Log.d(TAG, "upate UI as signed out status");
             tvUserName.setText(R.string.guest);
             tvUserEmail.setText("");
+            /* set the avatar to default */
+            ivProfilePicture.setImageDrawable(getDrawable(R.drawable.pic_holder));
             navigationView.getMenu().clear();
             navigationView.inflateMenu(R.menu.drawer_signed_out);
         }
@@ -294,6 +296,9 @@ public class DrawerActivity extends AppCompatActivity
         }
         Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(imageFile));
+        /*TODO fix: android.os.FileUriExposedException is thrown here
+        * OS: Android 8.0.0
+        * Choose camera to capture avatar will reproduce this bug*/
         startActivityForResult(cameraIntent, REQUEST_CAMERA);
     }
 
@@ -318,19 +323,19 @@ public class DrawerActivity extends AppCompatActivity
         imageFile = new File(Environment.getExternalStorageDirectory(), System.currentTimeMillis() + ".png");
         try {
             int permission = ActivityCompat.checkSelfPermission(DrawerActivity.this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE);
+            /*TODO optimize: use this callback "onRequestPermissionsResult" to handle the request result*/
             if(permission != PackageManager.PERMISSION_GRANTED){
                 ActivityCompat.requestPermissions(
                         DrawerActivity.this,
                         PERMISSIONS_STORAGE,
                         REQUEST_EXTERNAL_STORAGE
-
                 );
             }
 
             imageFile.createNewFile();
         } catch (IOException e) {
             e.printStackTrace();
-            Toast.makeText(this, "Error", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "createImageFile error", Toast.LENGTH_SHORT).show();
         }
     }
     @Override
@@ -356,6 +361,8 @@ public class DrawerActivity extends AppCompatActivity
             case REQUEST_CROP:
                 Log.d(TAG, "is profile pic button null ? " + String.valueOf(ivProfilePicture == null));
                 ivProfilePicture.setImageURI(Uri.fromFile(imageFile));
+                /*TODO implement: need to save the cropped image to Firebase storage
+                * make sure folder are named by each user's UBIT, update will overwrite previous copy in that folder*/
                 break;
         }
     }

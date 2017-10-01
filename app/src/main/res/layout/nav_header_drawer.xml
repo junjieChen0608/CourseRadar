@@ -11,12 +11,11 @@
 
     <com.makeramen.roundedimageview.RoundedImageView
         xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/iv_user_profile_photo"
         android:layout_width="50dp"
         android:layout_height="50dp"
-        android:layout_marginLeft="32dp"
         android:layout_marginStart="32dp"
         android:layout_marginTop="48dp"
-        android:id="@+id/iv_user_profile_photo"
         android:src="@drawable/pic_holder"
         android:scaleType="fitXY"
         app:layout_constraintLeft_toLeftOf="parent"
