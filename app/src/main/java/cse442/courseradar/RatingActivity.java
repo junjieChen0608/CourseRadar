@@ -80,8 +80,6 @@ public class RatingActivity extends AppCompatActivity {
                 /*fetch rating data from both user's and instructor's rating database*/
                 getRatingDatabase(RATINGS);
                 getRatingDatabase(INSTRUCTORS);
-                Toast.makeText(RatingActivity.this, "Your rating is submitted!!", Toast.LENGTH_SHORT).show();
-                finish();
             }
         });
     }
@@ -91,7 +89,6 @@ public class RatingActivity extends AppCompatActivity {
 
         if(whichDB.equals(RATINGS)){
             // update this user's rating database
-            Log.d("setter", "setter called at " + whichDB);
             HashMap<String, Object> newRating = new HashMap<>();
             newRating.put("assignmentDifficulty", assignmentDiff);
             newRating.put("lectureQuality", lectureQuality);
@@ -100,12 +97,12 @@ public class RatingActivity extends AppCompatActivity {
             HashMap<String, Object> newComment = new HashMap<>();
             newComment.put("comment", comment);
             ratingDB.child(userUBIT).child(instructorName+"-"+courseID).updateChildren(newComment);
+            Log.d("setter", "setter called at " + whichDB);
         }else{
             // update instructor's rating database
             if(userAssignmentDiff < 0){
                 /*this user's rating is negative, which means it has no previous rating
                 * just update it to the instructor's rating database, and increment total number of ratings*/
-                Log.d("setter", "setter called at " + whichDB);
                 instructorOverallQuality += overallQuality;
                 instructorAssignmentDiff += assignmentDiff;
                 instructorLectureQuality += lectureQuality;
@@ -113,7 +110,6 @@ public class RatingActivity extends AppCompatActivity {
             }else{
                 /*this user has previous rating
                 * need to calculate the rating difference to update the instructor's rating database*/
-                Log.d("setter", "setter called at " + whichDB);
                 instructorOverallQuality = instructorOverallQuality - userOverallQuality + overallQuality;
                 instructorAssignmentDiff = instructorAssignmentDiff - userAssignmentDiff + assignmentDiff;
                 instructorLectureQuality = instructorLectureQuality - userLectureQuality + lectureQuality;
@@ -129,6 +125,11 @@ public class RatingActivity extends AppCompatActivity {
         HashMap<String, Object> newComment = new HashMap<>();
         newComment.put(userUBIT, comment);
         instructorDB.child(instructorName).child("reviews").child(courseID).updateChildren(newComment);
+        Log.d("setter", "setter called at " + INSTRUCTORS);
+        Toast.makeText(RatingActivity.this, "Your rating is submitted!!", Toast.LENGTH_SHORT).show();
+        Log.d(TAG, "closing activity");
+        finish();
+
     }
 
     /*get rating from both database*/
@@ -149,7 +150,7 @@ public class RatingActivity extends AppCompatActivity {
                             userOverallQuality = rating.overallQuality;
                             userLectureQuality = rating.lectureQuality;
                             userAssignmentDiff = rating.assignmentDifficulty;
-                            Log.d("getRatingDatabase", "user rating:\n" + userOverallQuality + "\n" +
+                            Log.d("getRatingDatabase", "user previous rating:\n" + userOverallQuality + "\n" +
                                                             userLectureQuality + "\n" +
                                                             userAssignmentDiff + "\n");
                             /*update this user's rating*/
@@ -161,9 +162,10 @@ public class RatingActivity extends AppCompatActivity {
                             instructorLectureQuality = rating.lectureQuality;
                             instructorAssignmentDiff = rating.assignmentDifficulty;
                             instructorTotalRatings = rating.totalRatings;
-                            Log.d("getRatingDatabase", "instructor rating:\n" + instructorOverallQuality + "\n" +
+                            Log.d("getRatingDatabase", "instructor previous rating:\n" + instructorOverallQuality + "\n" +
                                     instructorLectureQuality + "\n" +
-                                    instructorAssignmentDiff + "\n");
+                                    instructorAssignmentDiff + "\n" +
+                                    rating.totalRatings + "\n");
                             /*update this instructor's rating*/
                             setRatingDatabase(INSTRUCTORS);
                         }
