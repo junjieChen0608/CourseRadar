@@ -30,11 +30,12 @@ public class MainActivity extends DrawerActivity implements SearchView.OnQueryTe
 
     private static final String TAG = MainActivity.class.getSimpleName();
     private SearchView svSearchBar;
-    private FirebaseDatabase searchCourse;
     private ProgressBar pbWait;
     private ListView lvSearchResultList;
     private TextView tvNoResult;
     private boolean noResult;
+    private FirebaseDatabase reviewDataBase;
+    private static final String COURSES = "courses";
 
     /*Rate activity prototype*/
     private Button btnRateMe;
@@ -64,7 +65,7 @@ public class MainActivity extends DrawerActivity implements SearchView.OnQueryTe
 
         tvNoResult = (TextView) findViewById(R.id.tv_no_result);
         noResult = true;
-        searchCourse= FirebaseDatabase.getInstance();
+        reviewDataBase= FirebaseDatabase.getInstance();
 
         btnRateMe = (Button) findViewById(R.id.btn_rate_me);
         btnRateMe.setOnClickListener(new View.OnClickListener() {
@@ -90,28 +91,20 @@ public class MainActivity extends DrawerActivity implements SearchView.OnQueryTe
     @Override
     public boolean onQueryTextSubmit(String input) {
         input = input.trim();
-        final String keyword = input;
         showProgressBar();
-        Log.d(TAG, "search this: " + input);
+        final String keyword= input;
         //TODO to improve the illegal input detection
         if(input!= null && !input.isEmpty()&& input.matches("\\w+")){
             input= input.toUpperCase();
-            String courseAbbr= "";
-            for (int i= 0; i<input.length(); i++){
-                if (input.charAt(i)>=65 &&input.charAt(i)<= 90){
-                    courseAbbr= input.substring(0, i+1);
-                }
-                else{
-                    break;
-                }
-            }
-            searchCourse.getReference(courseAbbr).child(input).addListenerForSingleValueEvent(new ValueEventListener() {
+            Log.d(TAG, "search this: " + input);
+            reviewDataBase.getReference(COURSES).child(input).addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     courseData resultCourse= dataSnapshot.getValue(courseData.class);
                     /*here it gets the courseData, it has a hashmap to store instructors and their email
                     * take those to form list*/
                     //TODO construct the instructor list for the course
+                    //TODO check if exist the course
                     Log.d("search test", resultCourse.getCredit());
                     Log.d("search test", resultCourse.getInstructor().toString());
 
@@ -128,6 +121,9 @@ public class MainActivity extends DrawerActivity implements SearchView.OnQueryTe
                     Log.d("onCancelled", "activited");
                 }
             });
+        }
+        else {
+            Toast.makeText(this, "input has illegal character, please double check", Toast.LENGTH_SHORT).show();
         }
         return false;
     }
