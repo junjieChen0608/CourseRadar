@@ -23,13 +23,14 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 
 import UtilityClass.InstructorDataAdapter;
+import UtilityClass.courseData;
 import UtilityClass.instructorData;
 
 public class MainActivity extends DrawerActivity implements SearchView.OnQueryTextListener{
 
     private static final String TAG = MainActivity.class.getSimpleName();
     private SearchView svSearchBar;
-    private DatabaseReference searchProfessor;
+    private FirebaseDatabase searchCourse;
     private ProgressBar pbWait;
     private ListView lvSearchResultList;
     private TextView tvNoResult;
@@ -63,7 +64,7 @@ public class MainActivity extends DrawerActivity implements SearchView.OnQueryTe
 
         tvNoResult = (TextView) findViewById(R.id.tv_no_result);
         noResult = true;
-        searchProfessor= FirebaseDatabase.getInstance().getReference("instructors");
+        searchCourse= FirebaseDatabase.getInstance();
 
         btnRateMe = (Button) findViewById(R.id.btn_rate_me);
         btnRateMe.setOnClickListener(new View.OnClickListener() {
@@ -92,34 +93,34 @@ public class MainActivity extends DrawerActivity implements SearchView.OnQueryTe
         final String keyword = input;
         showProgressBar();
         Log.d(TAG, "search this: " + input);
-        if(input!= null && !input.isEmpty()){
+        //TODO to improve the illegal input detection
+        if(input!= null && !input.isEmpty()&& input.matches("\\w+")){
             input= input.toUpperCase();
-            searchProfessor.orderByChild("firstName").equalTo(input).addListenerForSingleValueEvent(new ValueEventListener() {
+            String courseAbbr= "";
+            for (int i= 0; i<input.length(); i++){
+                if (input.charAt(i)>=65 &&input.charAt(i)<= 90){
+                    courseAbbr= input.substring(0, i+1);
+                }
+                else{
+                    break;
+                }
+            }
+            searchCourse.getReference(courseAbbr).child(input).addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
-                    Iterable<DataSnapshot> list = dataSnapshot.getChildren();
+                    courseData resultCourse= dataSnapshot.getValue(courseData.class);
+                    /*here it gets the courseData, it has a hashmap to store instructors and their email
+                    * take those to form list*/
+                    //TODO construct the instructor list for the course
+                    Log.d("search test", resultCourse.getCredit());
+                    Log.d("search test", resultCourse.getInstructor().toString());
 
-                    // initialize ArrayList to store all instructorData
-                    ArrayList<instructorData> instructorDataList = new ArrayList<instructorData>();
-
-                    for (DataSnapshot s : list) {
-                        Log.d("ins", s.getKey());
-                        instructorData data = s.getValue(instructorData.class);
-
-                        if (data != null) {
-                            instructorDataList.add(data);
-
-                        } else {
-                            Log.d("onDataChange", "not found");
-                        }
-                    }
-
-                    noResult = instructorDataList.isEmpty();
+                    /*noResult = instructorDataList.isEmpty();
                     hideProgressBar(keyword);
 
                     // show all founded instructorData to list view
                     InstructorDataAdapter instructorDataAdapter = new InstructorDataAdapter(MainActivity.this, instructorDataList);
-                    lvSearchResultList.setAdapter(instructorDataAdapter);
+                    lvSearchResultList.setAdapter(instructorDataAdapter);*/
                 }
 
                 @Override

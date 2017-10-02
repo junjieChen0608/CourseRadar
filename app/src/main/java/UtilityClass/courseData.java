@@ -7,23 +7,31 @@ import java.util.HashMap;
  */
 
 public class courseData {
-    public String credit;
-    public HashMap<String, Object> instructors;
+    private String credit;
+    private HashMap<String, String> instructor;
 
     public courseData(){};
 
-    public courseData(String credit, HashMap<String, Object> instructors){
+    public courseData(String credit, HashMap<String, String> instructor){
         this.credit = credit;
-        this.instructors = instructors;
-    };
+        this.instructor = instructor;
+    }
 
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("Credit: ").append(this.credit).append("\n");
-        for(String instructor : instructors.keySet()){
-            sb.append(instructor).append(": ").append(instructors.get(instructor)).append("\n");
+        for(String instructor : this.instructor.keySet()){
+            sb.append(instructor).append(": ").append(this.instructor.get(instructor)).append("\n");
         }
         return sb.toString();
+    };
+
+    public HashMap<String, String> getInstructor(){
+        return instructor;
+    }
+
+    public String getCredit(){
+        return credit;
     }
 }
