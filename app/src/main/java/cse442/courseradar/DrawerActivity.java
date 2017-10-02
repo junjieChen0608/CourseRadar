@@ -62,6 +62,8 @@ public class DrawerActivity extends AppCompatActivity
     protected RoundedImageView ivProfilePicture;
     private StorageReference firebaseStorage;
 
+    private boolean setFromLocal;
+
     protected TextView tvUserName;
     protected TextView tvUserEmail;
     protected File imageFile;
@@ -142,6 +144,9 @@ public class DrawerActivity extends AppCompatActivity
                     .addApi(Auth.GOOGLE_SIGN_IN_API, googleSignInOptions)
                     .build();
         }
+
+        setFromLocal = false;
+
     }
 
     @SuppressWarnings("StatementWithEmptyBody")
@@ -240,13 +245,24 @@ public class DrawerActivity extends AppCompatActivity
             Log.d(TAG, "upate UI as signed in status");
             tvUserName.setText(parseUBIT(user.getEmail()));
             tvUserEmail.setText(user.getEmail());
-            /* update user avatar from firebase storage */
-            firebaseStorage.child("avatar/"+parseUBIT(FirebaseAuth.getInstance().getCurrentUser().getEmail())).getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-                @Override
-                public void onSuccess(Uri uri) {
-                    Picasso.with(DrawerActivity.this).load(uri).into(ivProfilePicture);
+            /* check if image is exsited in local repo */
+            imageFile = new File(Environment.getExternalStorageDirectory(), parseUBIT(FirebaseAuth.getInstance().getCurrentUser().getEmail()) + ".png");
+            if(imageFile.exists()){
+                ivProfilePicture.setImageURI(Uri.fromFile(imageFile));
+            } else {
+                if(!setFromLocal){
+                /* update user avatar from firebase storage */
+                    firebaseStorage.child("avatar/"+parseUBIT(FirebaseAuth.getInstance().getCurrentUser().getEmail())).getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                        @Override
+                        public void onSuccess(Uri uri) {
+                            Picasso.with(DrawerActivity.this).load(uri).into(ivProfilePicture);
+                        }
+                    });
+                } else {
+                    setFromLocal = false;
                 }
-            });
+            }
+
             navigationView.getMenu().clear();
             navigationView.inflateMenu(R.menu.drawer_signed_in);
         }else{
@@ -333,7 +349,7 @@ public class DrawerActivity extends AppCompatActivity
     }
 
     protected void createImageFile() {
-        imageFile = new File(Environment.getExternalStorageDirectory(), System.currentTimeMillis() + ".png");
+        imageFile = new File(Environment.getExternalStorageDirectory(), parseUBIT(FirebaseAuth.getInstance().getCurrentUser().getEmail()) + ".png");
         try {
             imageFile.createNewFile();
         } catch (IOException e) {
@@ -404,6 +420,7 @@ public class DrawerActivity extends AppCompatActivity
                 /* upload image uri to firebase storage */
                 StorageReference filepath = firebaseStorage.child("avatar").child(parseUBIT(FirebaseAuth.getInstance().getCurrentUser().getEmail()));
                 filepath.putFile(Uri.fromFile(imageFile));
+                setFromLocal = true;
                 break;
         }
     }
