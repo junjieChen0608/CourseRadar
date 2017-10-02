@@ -2,7 +2,6 @@ package cse442.courseradar;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
@@ -35,9 +34,13 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 import com.makeramen.roundedimageview.RoundedImageView;
+import com.squareup.picasso.Picasso;
 
 import java.io.File;
 import java.io.IOException;
@@ -57,6 +60,8 @@ public class DrawerActivity extends AppCompatActivity
     private static final String TAG = DrawerActivity.class.getSimpleName();
 
     protected RoundedImageView ivProfilePicture;
+    private StorageReference firebaseStorage;
+
     protected TextView tvUserName;
     protected TextView tvUserEmail;
     protected File imageFile;
@@ -89,6 +94,7 @@ public class DrawerActivity extends AppCompatActivity
         View headerView = navigationView.getHeaderView(0);
         tvUserName = (TextView) headerView.findViewById(R.id.tv_user_name);
         tvUserEmail = (TextView) headerView.findViewById(R.id.tv_user_email);
+
         ivProfilePicture = (RoundedImageView) headerView.findViewById(R.id.iv_user_profile_photo);
         ivProfilePicture.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -117,6 +123,7 @@ public class DrawerActivity extends AppCompatActivity
                 }
             }
         });
+        firebaseStorage = FirebaseStorage.getInstance().getReference();
 
         StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
         StrictMode.setVmPolicy(builder.build());
@@ -233,8 +240,13 @@ public class DrawerActivity extends AppCompatActivity
             Log.d(TAG, "upate UI as signed in status");
             tvUserName.setText(parseUBIT(user.getEmail()));
             tvUserEmail.setText(user.getEmail());
-            /*TODO implement: need to update the imageview here if this user already has avatar,
-            * need to interact with Firebase storage*/
+            /* update user avatar from firebase storage */
+            firebaseStorage.child("avatar/"+parseUBIT(FirebaseAuth.getInstance().getCurrentUser().getEmail())).getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                @Override
+                public void onSuccess(Uri uri) {
+                    Picasso.with(DrawerActivity.this).load(uri).into(ivProfilePicture);
+                }
+            });
             navigationView.getMenu().clear();
             navigationView.inflateMenu(R.menu.drawer_signed_in);
         }else{
@@ -389,8 +401,9 @@ public class DrawerActivity extends AppCompatActivity
             case REQUEST_CROP:
                 Log.d(TAG, "is profile pic button null ? " + String.valueOf(ivProfilePicture == null));
                 ivProfilePicture.setImageURI(Uri.fromFile(imageFile));
-                /*TODO implement: need to save the cropped image to Firebase storage
-                * make sure folder are named by each user's UBIT, update will overwrite previous copy in that folder*/
+                /* upload image uri to firebase storage */
+                StorageReference filepath = firebaseStorage.child("avatar").child(parseUBIT(FirebaseAuth.getInstance().getCurrentUser().getEmail()));
+                filepath.putFile(Uri.fromFile(imageFile));
                 break;
         }
     }
