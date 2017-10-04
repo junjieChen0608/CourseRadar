@@ -62,6 +62,7 @@ public class DrawerActivity extends AppCompatActivity
     protected RoundedImageView ivProfilePicture;
     private StorageReference firebaseStorage;
 
+    /* the flag that is used to determine if upload image is done before retrieve image from firebase */
     private boolean setFromLocal;
 
     protected TextView tvUserName;
@@ -96,14 +97,12 @@ public class DrawerActivity extends AppCompatActivity
         View headerView = navigationView.getHeaderView(0);
         tvUserName = (TextView) headerView.findViewById(R.id.tv_user_name);
         tvUserEmail = (TextView) headerView.findViewById(R.id.tv_user_email);
-
         ivProfilePicture = (RoundedImageView) headerView.findViewById(R.id.iv_user_profile_photo);
         ivProfilePicture.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 /* check if user is sign in/out to enable/disable alertdialog */
                 if(FirebaseAuth.getInstance().getCurrentUser() != null){
-                    /* verify if we have storage permission */
                     verifyStoragePermissions(DrawerActivity.this);
                     new AlertDialog.Builder(DrawerActivity.this)
                             .setTitle("Select")
@@ -127,6 +126,7 @@ public class DrawerActivity extends AppCompatActivity
         });
         firebaseStorage = FirebaseStorage.getInstance().getReference();
 
+        /* method that is used to ignore uri exposure */
         StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
         StrictMode.setVmPolicy(builder.build());
 
@@ -251,7 +251,7 @@ public class DrawerActivity extends AppCompatActivity
                 ivProfilePicture.setImageURI(Uri.fromFile(imageFile));
             } else {
                 if(!setFromLocal){
-                /* update user avatar from firebase storage */
+                /* update user avatar by capturing the image url from firebase storage determined by user UBIT */
                     firebaseStorage.child("avatar/"+parseUBIT(FirebaseAuth.getInstance().getCurrentUser().getEmail())).getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
                         @Override
                         public void onSuccess(Uri uri) {
@@ -269,7 +269,7 @@ public class DrawerActivity extends AppCompatActivity
             Log.d(TAG, "upate UI as signed out status");
             tvUserName.setText(R.string.guest);
             tvUserEmail.setText("");
-            /* set the avatar to default */
+            /* set the avatar to default by passing the pic holder into the imageview */
             ivProfilePicture.setImageDrawable(getDrawable(R.drawable.pic_holder));
             navigationView.getMenu().clear();
             navigationView.inflateMenu(R.menu.drawer_signed_out);
@@ -320,7 +320,7 @@ public class DrawerActivity extends AppCompatActivity
         Toast.makeText(this, "Google Play Services error.", Toast.LENGTH_SHORT).show();
     }
 
-    /*invoke camera from seclecting alertdialog */
+    /* invoke camera by seclecting alertdialog poped up from pressing the avatar */
     protected void selectCamera() {
         createImageFile();
         if (!imageFile.exists()) {
@@ -331,13 +331,14 @@ public class DrawerActivity extends AppCompatActivity
         startActivityForResult(cameraIntent, REQUEST_CAMERA);
     }
 
-    /*invoke album from slecting alertdialog */
+    /* invoke album by slecting alertdialog poped up from pressing the avatar */
     protected void selectAlbum() {
         Intent albumIntent = new Intent(Intent.ACTION_PICK);
         albumIntent.setDataAndType(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, "image/*");
         startActivityForResult(albumIntent, REQUEST_ALBUM);
     }
 
+    /* crop the image either from camera or album by pass the image uri */
     protected void cropImage(Uri uri){
         Intent intent = new Intent("com.android.camera.action.CROP");
         intent.setDataAndType(uri, "image/*");
@@ -348,6 +349,8 @@ public class DrawerActivity extends AppCompatActivity
         startActivityForResult(intent, REQUEST_CROP);
     }
 
+    /* create a image file with png format and name the file by user UBIT
+     * therefore, it will overwrite the image with the newest one and save user storage */
     protected void createImageFile() {
         imageFile = new File(Environment.getExternalStorageDirectory(), parseUBIT(FirebaseAuth.getInstance().getCurrentUser().getEmail()) + ".png");
         try {
@@ -358,6 +361,7 @@ public class DrawerActivity extends AppCompatActivity
         }
     }
 
+    /* verify if we have storage permission from user cellphone and prompt the user if we do not have it */
     public static void verifyStoragePermissions(Activity activity) {
         // Check if we have storage permission
         int permission = ActivityCompat.checkSelfPermission(activity, android.Manifest.permission.WRITE_EXTERNAL_STORAGE);
@@ -372,6 +376,7 @@ public class DrawerActivity extends AppCompatActivity
         }
     }
 
+    /* handle the storage permission request by toast message to user when permission is granted or denied */
     @Override
     public void onRequestPermissionsResult(int requestCode,String permissions[], int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -394,6 +399,7 @@ public class DrawerActivity extends AppCompatActivity
         }
     }
 
+    /* handle the avatar function result from selecting alertdialog */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -417,7 +423,7 @@ public class DrawerActivity extends AppCompatActivity
             case REQUEST_CROP:
                 Log.d(TAG, "is profile pic button null ? " + String.valueOf(ivProfilePicture == null));
                 ivProfilePicture.setImageURI(Uri.fromFile(imageFile));
-                /* upload image uri to firebase storage */
+                /* upload image uri to firebase storage and name the image file by user UBIT and save it in avatar folder */
                 StorageReference filepath = firebaseStorage.child("avatar").child(parseUBIT(FirebaseAuth.getInstance().getCurrentUser().getEmail()));
                 filepath.putFile(Uri.fromFile(imageFile));
                 setFromLocal = true;
