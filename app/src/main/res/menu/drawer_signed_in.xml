@@ -2,15 +2,6 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
-        android:id="@+id/nav_my_profile"
-        android:title="My profile" />
-    <item
-        android:id="@+id/nav_my_review"
-        android:title="My reviews" />
-    <item
-        android:id="@+id/nav_mentioned_me"
-        android:title="Mentioned me(For instructors)" />
-    <item
         android:id="@+id/nav_sign_out"
         android:title="Sign out" />
 </menu>

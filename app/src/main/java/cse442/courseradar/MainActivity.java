@@ -22,23 +22,18 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Objects;
 
 import UtilityClass.CourseRating;
-import UtilityClass.InstructorDataAdapter;
 import UtilityClass.InstructorInfo;
 import UtilityClass.InstructorResultAdapter;
 import UtilityClass.ReviewInfo;
 import UtilityClass.ReviewInfoAdapter;
 import UtilityClass.courseData;
-import UtilityClass.instructorData;
 
 public class MainActivity extends DrawerActivity implements SearchView.OnQueryTextListener{
 
     private static final String TAG = MainActivity.class.getSimpleName();
     private SearchView svSearchBar;
-    private FirebaseDatabase searchCourse;
     private ProgressBar pbWait;
 
 
@@ -51,6 +46,8 @@ public class MainActivity extends DrawerActivity implements SearchView.OnQueryTe
 
 
     private static final String INSTRUCTORS = "instructors";
+    private static final String COURSES= "courses";
+    private DatabaseReference courseDB;
     private DatabaseReference instructorDB;
 
     private TextView instructorReview;
@@ -81,11 +78,9 @@ public class MainActivity extends DrawerActivity implements SearchView.OnQueryTe
 
         tvNoResult = (TextView) findViewById(R.id.tv_no_result);
         noResult = true;
-        searchCourse= FirebaseDatabase.getInstance();
 
-
-
-        instructorDB = FirebaseDatabase.getInstance().getReference().child(INSTRUCTORS);
+        courseDB= FirebaseDatabase.getInstance().getReference(COURSES);
+        instructorDB = FirebaseDatabase.getInstance().getReference(INSTRUCTORS);
         instructorReview = (TextView) findViewById(R.id.tv_instructor_review);
         btnClickToRate = (Button) findViewById(R.id.btn_click_to_rate);
         lvReviewsList = (ListView) findViewById(R.id.lv_reviews_list);
@@ -114,19 +109,9 @@ public class MainActivity extends DrawerActivity implements SearchView.OnQueryTe
         //TODO to improve the illegal input detection
         if(input!= null && !input.isEmpty()&& input.matches("\\w+")){
             input= input.toUpperCase();
-            String courseAbbr= "";
-            for (int i= 0; i<input.length(); i++){
-                if (input.charAt(i)>=65 &&input.charAt(i)<= 90){
-                    courseAbbr= input.substring(0, i+1);
-                }
-                else{
-                    break;
-                }
-            }
-
             final String modifiedInput = input;
 
-            searchCourse.getReference(courseAbbr).child(input).addListenerForSingleValueEvent(new ValueEventListener() {
+            courseDB.child(input).addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     courseData resultCourse= dataSnapshot.getValue(courseData.class);
@@ -164,8 +149,6 @@ public class MainActivity extends DrawerActivity implements SearchView.OnQueryTe
                                 // make the result fragment visible
                                 showInstructorInfo(theInstructor.getName().toUpperCase(), modifiedInput);
 
-                                //Toast.makeText(MainActivity.this, ((TextView)view.findViewById(R.id.tv_name)).getText().toString() + ((TextView)view.findViewById(R.id.tv_email)).getText(),
-                                //Toast.LENGTH_SHORT).show();
                             }
                         });
                     }
@@ -176,6 +159,11 @@ public class MainActivity extends DrawerActivity implements SearchView.OnQueryTe
                     Log.d("onCancelled", "activited");
                 }
             });
+        }
+        else{
+            noResult = true;
+            hideProgressBar(keyword);
+            Toast.makeText(this, "we only accept charecters and numbers", Toast.LENGTH_SHORT).show();
         }
         return false;
     }

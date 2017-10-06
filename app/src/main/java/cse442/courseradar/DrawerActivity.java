@@ -165,12 +165,6 @@ public class DrawerActivity extends AppCompatActivity
             case R.id.nav_sign_out:
                 signOut();
                 break;
-            case R.id.nav_my_profile:
-                break;
-            case R.id.nav_my_review:
-                break;
-            case R.id.nav_mentioned_me:
-                break;
         }
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
