@@ -1,5 +1,7 @@
 package cse442.courseradar;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -30,6 +32,15 @@ import UtilityClass.ReviewInfo;
 import UtilityClass.ReviewInfoAdapter;
 import UtilityClass.courseData;
 
+
+/**
+ * TODO: UI design
+ * TODO: update reviews when user finishes review
+ *
+ */
+
+
+
 public class MainActivity extends DrawerActivity implements SearchView.OnQueryTextListener{
 
     private static final String TAG = MainActivity.class.getSimpleName();
@@ -57,7 +68,9 @@ public class MainActivity extends DrawerActivity implements SearchView.OnQueryTe
     private boolean noResult;
 
 
+    private AlertDialog alertDialog;
 
+    private String lastTimeUsedModifiedCourseID;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -86,6 +99,29 @@ public class MainActivity extends DrawerActivity implements SearchView.OnQueryTe
         lvReviewsList = (ListView) findViewById(R.id.lv_reviews_list);
 
 
+
+
+        //
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+        builder.setMessage("Do you want to sign to rate?");
+        builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                Intent intent = new Intent(MainActivity.this, LandingActivity.class);
+                startActivity(intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT));
+            }
+        });
+
+        builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                alertDialog.hide();
+            }
+        });
+
+        alertDialog = builder.create();
+
     }
 
     @Override
@@ -98,6 +134,8 @@ public class MainActivity extends DrawerActivity implements SearchView.OnQueryTe
             Log.wtf(TAG + " onStart", "user is signed out");
         }
         updateDrawerUI(FirebaseAuth.getInstance().getCurrentUser());
+
+
     }
 
     @Override
@@ -211,11 +249,15 @@ public class MainActivity extends DrawerActivity implements SearchView.OnQueryTe
                     btnClickToRate.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View view) {
-                            Intent intent = new Intent(MainActivity.this, RatingActivity.class);
-                            intent.putExtra("instructorName", instructorName);
-                            intent.putExtra("courseID", courseID);
-                            startActivity(intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT));
 
+                            if (FirebaseAuth.getInstance().getCurrentUser() == null) {
+                                alertDialog.show();
+                            } else {
+                                Intent intent = new Intent(MainActivity.this, RatingActivity.class);
+                                intent.putExtra("instructorName", instructorName);
+                                intent.putExtra("courseID", courseID);
+                                startActivity(intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT));
+                            }
                         }
                     });
                     btnClickToRate.setVisibility(View.VISIBLE);
