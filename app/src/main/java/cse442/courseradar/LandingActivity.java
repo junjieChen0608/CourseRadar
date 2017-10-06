@@ -125,8 +125,8 @@ public class LandingActivity extends DrawerActivity implements View.OnClickListe
                 handleSignInResult(result);
             }
         }else{
-            Log.d(TAG, "result code is not OK");
-            Toast.makeText(this, "Please check if you have Internet access", Toast.LENGTH_SHORT).show();
+            Log.d(TAG, "result code is " + resultCode);
+            Toast.makeText(this, "Sign in cancelled, or you don't have Internet access", Toast.LENGTH_SHORT).show();
         }
     }
 
