@@ -7,6 +7,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RatingBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
@@ -26,7 +27,8 @@ public class RatingActivity extends AppCompatActivity {
     private static final String RATINGS = "ratings";
     private static final String INSTRUCTORS = "instructors";
 
-    private EditText etInstructorName, etCourseID, etComment;
+    private EditText etComment;
+    private TextView tvInstructorName, tvCourseID;
     private RatingBar rbOverallQuality, rbLectureQuality, rbAssignmentDiff;
     private Button btnSubmit;
     private DatabaseReference instructorDB, ratingDB;
@@ -42,9 +44,12 @@ public class RatingActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_rating);
         /*initialize UI elements*/
-        etInstructorName = (EditText) findViewById(R.id.et_instructor_name);
-        etCourseID = (EditText) findViewById(R.id.et_course_id);
+        tvInstructorName = (TextView) findViewById(R.id.tv_instructor_name);
+        tvInstructorName.setText(getIntent().getStringExtra("instructorName"));
+        tvCourseID = (TextView) findViewById(R.id.tv_course_id);
+        tvCourseID.setText(getIntent().getStringExtra("courseID"));
         etComment = (EditText) findViewById(R.id.et_comment);
+
 
         rbOverallQuality = (RatingBar) findViewById(R.id.rb_overall_quality);
         rbLectureQuality = (RatingBar) findViewById(R.id.rb_lecture_quality);
@@ -63,8 +68,8 @@ public class RatingActivity extends AppCompatActivity {
         btnSubmit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                instructorName = etInstructorName.getText().toString();
-                courseID = etCourseID.getText().toString();
+                instructorName = tvInstructorName.getText().toString();
+                courseID = tvCourseID.getText().toString();
                 comment = etComment.getText().toString();
 
                 overallQuality = (int) rbOverallQuality.getRating();
@@ -122,8 +127,10 @@ public class RatingActivity extends AppCompatActivity {
     private void updateInstructorRating(){
         CourseRating newRating = new CourseRating(instructorAssignmentDiff, instructorLectureQuality,instructorOverallQuality, instructorTotalRatings);
         instructorDB.child(instructorName).child("courses").child(courseID).updateChildren(newRating.toMap());
+
         HashMap<String, Object> newComment = new HashMap<>();
         newComment.put(userUBIT, comment);
+
         instructorDB.child(instructorName).child("reviews").child(courseID).updateChildren(newComment);
         Log.d("setter", "setter called at " + INSTRUCTORS);
         Toast.makeText(RatingActivity.this, "Your rating is submitted!!", Toast.LENGTH_SHORT).show();

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:orientation="horizontal"
     android:layout_width="match_parent"
@@ -8,29 +9,61 @@
 
     <ImageView
         android:id="@+id/iv_pp_image"
-        android:layout_gravity="fill_horizontal"
-        android:layout_width="wrap_content"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:padding="16dp"
+        android:src="@drawable/pic_holder"
+        android:layout_marginLeft="24dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        android:layout_marginStart="24dp"
+        tools:layout_constraintTop_creator="1"
+        android:layout_marginTop="16dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginBottom="16dp" />
+
+    <TextView
+        android:id="@+id/tv_name"
+        android:layout_width="294dp"
         android:layout_height="wrap_content"
-        android:padding="16dp"
-        android:src = "@android:drawable/btn_dialog"/>
+        tools:text="name"
+        tools:layout_constraintTop_creator="1"
+        tools:layout_constraintLeft_creator="1"
+        app:layout_constraintLeft_toRightOf="@+id/iv_pp_image"
+        android:layout_marginLeft="80dp"
+        android:layout_marginStart="80dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginBottom="16dp" />
 
-    <LinearLayout
-        android:padding="16dp"
-        android:orientation="vertical"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-        <TextView
-            android:id="@+id/tv_name"
-            tools:text="name"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+    <TextView
+        android:id="@+id/tv_email"
+        tools:text="email"
+        android:layout_width="294dp"
+        android:layout_height="wrap_content"
+        tools:layout_constraintTop_creator="1"
+        app:layout_constraintLeft_toRightOf="@+id/iv_pp_image"
+        android:layout_marginLeft="80dp"
+        android:layout_marginStart="80dp"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginTop="16dp" />
 
-        <TextView
-            android:id="@+id/tv_email"
-            tools:text="email"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
-    </LinearLayout>
+    <!--<LinearLayout-->
+    <!--android:padding="16dp"-->
+    <!--android:orientation="vertical"-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="wrap_content">-->
+    <!--<TextView-->
+    <!--android:id="@+id/tw_name"-->
+    <!--tools:text="name"-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="wrap_content" />-->
 
+    <!--<TextView-->
+    <!--android:id="@+id/tw_email"-->
+    <!--tools:text="email"-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="wrap_content" />-->
+    <!--</LinearLayout>-->
+    <!---->
 
-</LinearLayout>
+</android.support.constraint.ConstraintLayout>

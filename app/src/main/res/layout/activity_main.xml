@@ -58,16 +58,59 @@
         tools:layout_constraintRight_creator="1"
         tools:layout_constraintLeft_creator="1" />
 
+
+
+
+    <TextView
+        android:visibility="gone"
+        android:padding="30dp"
+        android:layout_margin="30dp"
+        android:id="@+id/tv_instructor_review"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        tools:layout_constraintLeft_creator="1"
+        tools:layout_constraintTop_creator="1" />
+
+    <ListView
+        android:visibility="gone"
+        android:id="@+id/lv_reviews_list"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tv_instructor_review"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        tools:layout_constraintRight_creator="1"
+        tools:layout_constraintLeft_creator="1" />
+
+    <ListView
+        android:visibility="gone"
+        android:id="@+id/lv_instructor_info"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="parent"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        tools:layout_constraintRight_creator="1"
+        tools:layout_constraintLeft_creator="1" />
+
+
+
     <Button
-        android:id="@+id/btn_rate_me"
-        android:text="Rate me!"
+        android:visibility="gone"
+        android:text="Click To Rate"
+        android:id="@+id/btn_click_to_rate"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         tools:layout_constraintRight_creator="1"
         tools:layout_constraintBottom_creator="1"
-        app:layout_constraintBottom_toTopOf="@+id/sv_search_bar"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         tools:layout_constraintLeft_creator="1"
+        android:layout_marginBottom="16dp"
         app:layout_constraintLeft_toLeftOf="parent" />
+
+    
 
 </android.support.constraint.ConstraintLayout>
