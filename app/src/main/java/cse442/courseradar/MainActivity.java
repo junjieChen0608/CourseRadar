@@ -75,6 +75,10 @@ public class MainActivity extends DrawerActivity implements SearchView.OnQueryTe
 
     private String lastTimeUsedModifiedCourseID;
 
+
+    private String currentInstructor;
+    private String currentCourseID;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -138,12 +142,16 @@ public class MainActivity extends DrawerActivity implements SearchView.OnQueryTe
         }
         updateDrawerUI(FirebaseAuth.getInstance().getCurrentUser());
 
+        if (clSearchOverview.getVisibility() == View.GONE) {
+            showInstructorInfo(currentInstructor, currentCourseID);
+        }
 
     }
 
     @Override
     public boolean onQueryTextSubmit(String input) {
         input = input.trim();
+        input = input.replaceAll(" ", "");
         final String keyword = input;
         showProgressBarInOverview();
         Log.d(TAG, "search this: " + input);
@@ -168,7 +176,6 @@ public class MainActivity extends DrawerActivity implements SearchView.OnQueryTe
                         Log.d("search test", resultCourse.getCredit());
                         Log.d("search test", resultCourse.getInstructor().toString());
 
-
                         HashMap<String, String> instructors = resultCourse.getInstructor();
                         final ArrayList<InstructorInfo> instructorNames = new ArrayList<InstructorInfo>();
                         for (String s : instructors.keySet()) {
@@ -189,7 +196,9 @@ public class MainActivity extends DrawerActivity implements SearchView.OnQueryTe
                                 clSearchOverview.setVisibility(View.GONE);
 
                                 /*TODO optimize: make the detailed view visible*/
-                                showInstructorInfo(theInstructor.getName().toUpperCase(), modifiedInput);
+                                currentInstructor = theInstructor.getName().toUpperCase();
+                                currentCourseID = modifiedInput;
+                                showInstructorInfo(currentInstructor, currentCourseID);
 
                             }
                         });
