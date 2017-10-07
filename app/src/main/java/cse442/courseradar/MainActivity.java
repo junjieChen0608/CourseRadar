@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.constraint.ConstraintLayout;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -47,25 +48,27 @@ public class MainActivity extends DrawerActivity implements SearchView.OnQueryTe
     private SearchView svSearchBar;
     private ProgressBar pbWait;
 
-
+    /*search overview elements*/
+    private ConstraintLayout clSearchOverview;
     private ListView lvSearchResultList;
     private ListView lvReviewsList;
+    private TextView tvNoResult;
+    private boolean noResult;
 
     // second frame attributes
     private ListView lvInstructorInfo;
+    private ConstraintLayout clSearchDetailedView;
+
+
     private Button btnClickToRate;
-
-
     private static final String INSTRUCTORS = "instructors";
     private static final String COURSES= "courses";
     private DatabaseReference courseDB;
+
     private DatabaseReference instructorDB;
 
+
     private TextView instructorReview;
-
-
-    private TextView tvNoResult;
-    private boolean noResult;
 
 
     private AlertDialog alertDialog;
@@ -79,14 +82,14 @@ public class MainActivity extends DrawerActivity implements SearchView.OnQueryTe
         View contentView = inflater.inflate(R.layout.activity_main, null, false);
         drawer.addView(contentView, 0);
         unlockDrawer();
+        clSearchOverview = (ConstraintLayout) findViewById(R.id.search_overview);
+        clSearchDetailedView = (ConstraintLayout) findViewById(R.id.search_detailed_view);
         svSearchBar = (SearchView) findViewById(R.id.sv_search_bar);
         svSearchBar.setIconifiedByDefault(false);
         svSearchBar.setOnQueryTextListener(this);
         pbWait = (ProgressBar) findViewById(R.id.pb_wait);
 
-        /*TODO implement: initialize a new fragment when click listview item*/
         lvSearchResultList = (ListView) findViewById(R.id.lv_instructorData);
-
         lvInstructorInfo = (ListView) findViewById(R.id.lv_instructor_info);
 
         tvNoResult = (TextView) findViewById(R.id.tv_no_result);
@@ -142,7 +145,7 @@ public class MainActivity extends DrawerActivity implements SearchView.OnQueryTe
     public boolean onQueryTextSubmit(String input) {
         input = input.trim();
         final String keyword = input;
-        showProgressBar();
+        showProgressBarInOverview();
         Log.d(TAG, "search this: " + input);
         //TODO to improve the illegal input detection
         if(input!= null && !input.isEmpty()&& input.matches("\\w+")){
@@ -158,7 +161,7 @@ public class MainActivity extends DrawerActivity implements SearchView.OnQueryTe
                     //TODO construct the instructor list for the course
 
                     noResult = (resultCourse == null);
-                    hideProgressBar(keyword);
+                    hideProgressBarInOverview(keyword);
 
                     if (! noResult) {
 
@@ -180,11 +183,12 @@ public class MainActivity extends DrawerActivity implements SearchView.OnQueryTe
                                 InstructorInfo theInstructor = instructorNames.get(i);
                                 Toast.makeText(MainActivity.this, theInstructor.getName() + " " + theInstructor.getEmail(), Toast.LENGTH_SHORT).show();
 
-                                // make the search fragment invisible
-                                lvSearchResultList.setVisibility(View.GONE);
-                                svSearchBar.setVisibility(View.GONE);
+                                /*TODO optimize: make the search overview gone*/
+//                                lvSearchResultList.setVisibility(View.GONE);
+//                                svSearchBar.setVisibility(View.GONE);
+                                clSearchOverview.setVisibility(View.GONE);
 
-                                // make the result fragment visible
+                                /*TODO optimize: make the detailed view visible*/
                                 showInstructorInfo(theInstructor.getName().toUpperCase(), modifiedInput);
 
                             }
@@ -200,7 +204,7 @@ public class MainActivity extends DrawerActivity implements SearchView.OnQueryTe
         }
         else{
             noResult = true;
-            hideProgressBar(keyword);
+            hideProgressBarInOverview(keyword);
             Toast.makeText(this, "we only accept charecters and numbers", Toast.LENGTH_SHORT).show();
         }
         return false;
@@ -231,7 +235,7 @@ public class MainActivity extends DrawerActivity implements SearchView.OnQueryTe
                     int overallQuality = (int) hashMap.get("overallQuality");
                     int totalRatings = (int) hashMap.get("totalRatings");
 
-                    instructorReview.setVisibility(View.VISIBLE);
+                    /*TODO optimize: overhaul the UI design, and make it visible*/
                     instructorReview.setText(   "Course: " + courseID + "\n" +
                                                 "Instructor: " + instructorName + "\n" +
                                                 "Assignment Difficult: " + assignmentDifficulty + "\n" +
@@ -239,7 +243,7 @@ public class MainActivity extends DrawerActivity implements SearchView.OnQueryTe
                                                 "Overall Quality: "+ overallQuality + "\n" +
                                                 "Total Ratings: " + totalRatings);
 
-
+                    clSearchDetailedView.setVisibility(View.VISIBLE);
                     showReviewsForThisInstructor(instructorName, courseID);
 
                     Log.wtf(TAG, "visibility of lvSearchResult: " + lvSearchResultList.getVisibility() + " " + View.VISIBLE + " " + View.GONE);
@@ -260,9 +264,6 @@ public class MainActivity extends DrawerActivity implements SearchView.OnQueryTe
                             }
                         }
                     });
-                    btnClickToRate.setVisibility(View.VISIBLE);
-
-
 
                     Log.wtf(TAG, "found something for instructor: " + instructorName + " on course: " + courseID);
                     //Toast.makeText(MainActivity.this, "successfully found something", Toast.LENGTH_SHORT).show();
@@ -281,30 +282,6 @@ public class MainActivity extends DrawerActivity implements SearchView.OnQueryTe
         });
 
     }
-
-    /**
-     *  If we are looking at instructor's review, then press back goes to the search result.
-     *  If we are on the search result, then press back behaves just like before.
-     */
-    @Override
-    public void onBackPressed() {
-
-        if (noResult) {
-            lvSearchResultList.setVisibility(View.GONE);
-            super.onBackPressed();
-        } else if (lvSearchResultList.getVisibility() == View.GONE) {
-            instructorReview.setVisibility(View.GONE);
-            btnClickToRate.setVisibility(View.GONE);
-            lvReviewsList.setVisibility(View.GONE);
-
-            lvSearchResultList.setVisibility(View.VISIBLE);
-            svSearchBar.setVisibility(View.VISIBLE);
-        } else {
-            super.onBackPressed();
-        }
-
-    }
-
 
     /**
      * TODO: redesign the interface to make it look better
@@ -332,8 +309,7 @@ public class MainActivity extends DrawerActivity implements SearchView.OnQueryTe
 
                 ReviewInfoAdapter reviewInfoAdapter = new ReviewInfoAdapter(MainActivity.this, reviewInfos);
                 lvReviewsList.setAdapter(reviewInfoAdapter);
-                lvReviewsList.setVisibility(View.VISIBLE);
-
+                clSearchDetailedView.setVisibility(View.VISIBLE);
             }
 
             @Override
@@ -343,6 +319,34 @@ public class MainActivity extends DrawerActivity implements SearchView.OnQueryTe
         });
     }
 
+
+    /**
+     *  If we are looking at instructor's review, then press back goes to the search result.
+     *  If we are on the search result, then press back behaves just like before.
+     */
+    @Override
+    public void onBackPressed() {
+
+        if (noResult) {
+            lvSearchResultList.setVisibility(View.GONE);
+            super.onBackPressed();
+        } else if (clSearchOverview.getVisibility() == View.GONE) {
+            /*TODO optimize: make search detailed view gone*/
+            clSearchDetailedView.setVisibility(View.GONE);
+//            instructorReview.setVisibility(View.GONE);
+//            btnClickToRate.setVisibility(View.GONE);
+//            lvReviewsList.setVisibility(View.GONE);
+
+            /*TODO optimize: make search overview visible*/
+//            lvSearchResultList.setVisibility(View.VISIBLE);
+//            svSearchBar.setVisibility(View.VISIBLE);
+            clSearchOverview.setVisibility(View.VISIBLE);
+        } else {
+            super.onBackPressed();
+        }
+
+    }
+
     @Override
     public boolean onQueryTextChange(String s) {
         /* track keywords change, maybe useful for search suggestion */
@@ -350,19 +354,17 @@ public class MainActivity extends DrawerActivity implements SearchView.OnQueryTe
     }
 
     /*hide previously shown result list or no result text view, then show progress bar*/
-    private void showProgressBar(){
+    private void showProgressBarInOverview(){
         if(noResult){
             tvNoResult.setVisibility(View.GONE);
-        }
-
-        else {
+        } else {
             lvSearchResultList.setVisibility(View.GONE);
         }
         pbWait.setVisibility(View.VISIBLE);
     }
 
     /*show no search result or result list, then hide progress bar*/
-    private void hideProgressBar(String keyword){
+    private void hideProgressBarInOverview(String keyword){
         if(noResult){
             String formatKeyword = "\"" + keyword + "\"";
             tvNoResult.setText(getString(R.string.no_result_found_for) + " " +formatKeyword);
