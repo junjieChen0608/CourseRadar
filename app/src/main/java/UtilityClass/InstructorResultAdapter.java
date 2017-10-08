@@ -7,6 +7,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.RatingBar;
 import android.widget.TextView;
 
 import org.w3c.dom.Text;
@@ -52,10 +53,19 @@ public class InstructorResultAdapter extends ArrayAdapter<InstructorInfo> {
 
         // later it will be great if we could show profile photo of each instructor.
 
+//        TextView totalRatingsTextView = (TextView) listItemView.findViewById(R.id.tv_total_ratings);
+//        totalRatingsTextView.setText("Overall " + currentInstuctor.getOverallQuality() + " based on " + currentInstuctor.getTotalRatings() + " reviewers");
+
+
+        RatingBar overallRating = (RatingBar) listItemView.findViewById(R.id.rb_overall_quality);
+        if (currentInstuctor.getTotalRatings() != 0) {
+            overallRating.setRating(currentInstuctor.getOverallQuality() / currentInstuctor.getTotalRatings());
+        } else {
+            overallRating.setRating(0);
+        }
 
         TextView totalRatingsTextView = (TextView) listItemView.findViewById(R.id.tv_total_ratings);
-
-        totalRatingsTextView.setText("Overall " + currentInstuctor.getOverallQuality() + " based on " + currentInstuctor.getTotalRatings() + " reviewers");
+        totalRatingsTextView.setText(currentInstuctor.getTotalRatings() + " reviews");
 
         return listItemView;
     }
