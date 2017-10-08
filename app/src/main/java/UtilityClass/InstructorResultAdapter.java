@@ -9,6 +9,8 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
+import org.w3c.dom.Text;
+
 import java.util.ArrayList;
 
 import cse442.courseradar.R;
@@ -49,6 +51,11 @@ public class InstructorResultAdapter extends ArrayAdapter<InstructorInfo> {
         emailTextView.setText(currentInstuctor.getEmail());
 
         // later it will be great if we could show profile photo of each instructor.
+
+
+        TextView totalRatingsTextView = (TextView) listItemView.findViewById(R.id.tv_total_ratings);
+
+        totalRatingsTextView.setText("Overall  " + currentInstuctor.getOverallQuality() + " based on " + currentInstuctor.getTotalRatings() + " reviewers");
 
         return listItemView;
     }
