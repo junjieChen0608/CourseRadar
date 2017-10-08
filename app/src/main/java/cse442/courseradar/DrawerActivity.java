@@ -6,9 +6,10 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.StrictMode;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
@@ -24,6 +25,8 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -35,15 +38,21 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageMetadata;
 import com.google.firebase.storage.StorageReference;
 import com.makeramen.roundedimageview.RoundedImageView;
 import com.squareup.picasso.Picasso;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.Date;
 
 public class DrawerActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.OnConnectionFailedListener {
@@ -68,7 +77,7 @@ public class DrawerActivity extends AppCompatActivity
     protected TextView tvUserName;
     protected TextView tvUserEmail;
     protected File imageFile;
-    private  File tempImage;
+    private  File localImage;
     protected NavigationView navigationView;
     protected static GoogleApiClient googleApiClient;
     /* the universal drawer that shared among sub-classes */
@@ -76,6 +85,10 @@ public class DrawerActivity extends AppCompatActivity
     /* the activity that user is currently in, it is used to implement back button logic */
     protected Activity currentActivity;
     private ProgressDialog progressDialog;
+    private AlertDialog alertDialog;
+    private File cacheFilePath;
+    private String userUBIT;
+    private ProgressBar pbLoadAvatar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -91,6 +104,25 @@ public class DrawerActivity extends AppCompatActivity
         drawer.setDrawerListener(toggle);
         toggle.syncState();
 
+        drawer.setDrawerListener(new DrawerLayout.DrawerListener() {
+            @Override
+            public void onDrawerSlide(View drawerView, float slideOffset) {
+                InputMethodManager inputMethodManager = (InputMethodManager) DrawerActivity.this.getSystemService(Activity.INPUT_METHOD_SERVICE);
+                inputMethodManager.hideSoftInputFromWindow(
+                        DrawerActivity.this.getCurrentFocus().getWindowToken(), 0
+                );
+            }
+
+            @Override
+            public void onDrawerOpened(View drawerView) { }
+
+            @Override
+            public void onDrawerClosed(View drawerView) { }
+
+            @Override
+            public void onDrawerStateChanged(int newState) { }
+        });
+
         navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
@@ -104,21 +136,12 @@ public class DrawerActivity extends AppCompatActivity
             public void onClick(View view) {
                 /* check if user is sign in/out to enable/disable alertdialog */
                 if(FirebaseAuth.getInstance().getCurrentUser() != null){
-                    verifyStoragePermissions(DrawerActivity.this);
-                    new AlertDialog.Builder(DrawerActivity.this)
-                            .setTitle("Select")
-                            .setItems(new String[]{"Camera", "Album"}, new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialogInterface, int i) {
-                                    if (i == 0) {
-                                        selectCamera();
-                                    } else {
-                                        selectAlbum();
-                                    }
-                                }
-                            })
-                            .create()
-                            .show();
+                    if(ActivityCompat.checkSelfPermission(DrawerActivity.this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED){
+                        alertDialog.show();
+                    }
+                    else {
+                        verifyStoragePermissions(DrawerActivity.this);
+                    }
                 }
                 else{
                     Log.wtf("onClickAvatar","user signed out");
@@ -148,6 +171,20 @@ public class DrawerActivity extends AppCompatActivity
 
         setFromLocal = false;
 
+        alertDialog = new AlertDialog.Builder(DrawerActivity.this)
+                .setTitle("Select")
+                .setItems(new String[]{"Camera", "Album"}, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        if (i == 0) {
+                            selectCamera();
+                        } else {
+                            selectAlbum();
+                        }
+                    }
+                }).create();
+        cacheFilePath = this.getExternalCacheDir();
+        pbLoadAvatar = headerView.findViewById(R.id.pb_load_avatar);
     }
 
     @SuppressWarnings("StatementWithEmptyBody")
@@ -155,7 +192,7 @@ public class DrawerActivity extends AppCompatActivity
     public boolean onNavigationItemSelected(MenuItem item) {
         // Handle navigation view item clicks here.
         int id = item.getItemId();
-        // TODO implement: click menu item logic
+        // TODO implement LATER: click menu item logic
         switch (id){
             case R.id.nav_sign_in:
                 Intent signInIntent = new Intent(currentActivity, LandingActivity.class).setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
@@ -237,32 +274,39 @@ public class DrawerActivity extends AppCompatActivity
             Log.wtf("update drawer UI", "This should never happen");
         }
         if(user != null){
-            Log.d(TAG, "upate UI as signed in status");
+            Log.d(TAG, "update UI as signed in status");
             tvUserName.setText(parseUBIT(user.getEmail()));
             tvUserEmail.setText(user.getEmail());
+            userUBIT = parseUBIT(FirebaseAuth.getInstance().getCurrentUser().getEmail());
             /* check if image is exsited in local repo */
-            tempImage = new File(Environment.getExternalStorageDirectory().getAbsolutePath(), parseUBIT(FirebaseAuth.getInstance().getCurrentUser().getEmail()) + ".png");
-            if(tempImage.exists()){
-                verifyStoragePermissions(DrawerActivity.this);
-                ivProfilePicture.setImageURI(Uri.fromFile(tempImage));
-            } else {
-                if(!setFromLocal){
+//            localImage = new File(cacheFilePath, userUBIT + ".jpeg");
+//            if(localImage.exists() &&
+//                ActivityCompat.checkSelfPermission(DrawerActivity.this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED){
+//                ivProfilePicture.setImageURI(Uri.fromFile(localImage));
+//            } else {
+//
+//            }
+            if(!setFromLocal){
                 /* update user avatar by capturing the image url from firebase storage determined by user UBIT */
-                    firebaseStorage.child("avatar/"+parseUBIT(FirebaseAuth.getInstance().getCurrentUser().getEmail())).getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-                        @Override
-                        public void onSuccess(Uri uri) {
-                            Picasso.with(DrawerActivity.this).load(uri).into(ivProfilePicture);
-                        }
-                    });
-                } else {
-                    setFromLocal = false;
-                }
+                Task downloadAvatar = firebaseStorage.child("avatar/"+userUBIT).getDownloadUrl();
+
+                downloadAvatar.addOnSuccessListener(new OnSuccessListener<Uri>() {
+                    @Override
+                    public void onSuccess(Uri uri) {
+                        Log.d("Download avatar", "found download link");
+                        avatarLoading();
+                        Picasso.with(DrawerActivity.this).load(uri).into(ivProfilePicture);
+                        avatarLoaded();
+                    }
+                });
+            } else {
+                setFromLocal = false;
             }
 
             navigationView.getMenu().clear();
             navigationView.inflateMenu(R.menu.drawer_signed_in);
         }else{
-            Log.d(TAG, "upate UI as signed out status");
+            Log.d(TAG, "updating UI as signed out status");
             tvUserName.setText(R.string.guest);
             tvUserEmail.setText("");
             /* set the avatar to default by passing the pic holder into the imageview */
@@ -348,7 +392,7 @@ public class DrawerActivity extends AppCompatActivity
     /* create a image file with png format and name the file by user UBIT
      * therefore, it will overwrite the image with the newest one and save user storage */
     protected void createImageFile() {
-        imageFile = new File(Environment.getExternalStorageDirectory().getAbsolutePath(), "temp.png");
+        imageFile = new File(cacheFilePath, userUBIT + ".jpeg");
         try {
             imageFile.createNewFile();
         } catch (IOException e) {
@@ -361,15 +405,12 @@ public class DrawerActivity extends AppCompatActivity
     public static void verifyStoragePermissions(Activity activity) {
         // Check if we have storage permission
         int permission = ActivityCompat.checkSelfPermission(activity, android.Manifest.permission.WRITE_EXTERNAL_STORAGE);
-
-        if (permission != PackageManager.PERMISSION_GRANTED) {
-            // We don't have permission so prompt the user
-            ActivityCompat.requestPermissions(
-                    activity,
-                    PERMISSIONS_STORAGE,
-                    REQUEST_EXTERNAL_STORAGE
-            );
-        }
+        // We don't have permission so prompt the user
+        ActivityCompat.requestPermissions(
+                activity,
+                PERMISSIONS_STORAGE,
+                REQUEST_EXTERNAL_STORAGE
+        );
     }
 
     /* handle the storage permission request by toast message to user when permission is granted or denied */
@@ -382,14 +423,11 @@ public class DrawerActivity extends AppCompatActivity
                     Toast.makeText(this,
                             "Permission is granted, avatar is enable",
                             Toast.LENGTH_SHORT).show();
-                    ivProfilePicture.setImageURI(Uri.fromFile(tempImage));
-
-
+                    alertDialog.show();
                 } else {
                     Toast.makeText(this,
                             "Permission is denied, avatar is disable",
                             Toast.LENGTH_SHORT).show();
-                    ivProfilePicture.setImageDrawable(getDrawable(R.drawable.pic_holder));
                 }
                 return;
             }
@@ -419,13 +457,40 @@ public class DrawerActivity extends AppCompatActivity
                 break;
             case REQUEST_CROP:
                 ivProfilePicture.setImageURI(Uri.fromFile(imageFile));
+                InputStream imgStream = null;
+                /*load image file as stream*/
+                try{
+                    imgStream = getContentResolver().openInputStream(Uri.fromFile(imageFile));
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
+                /*compress the image*/
+                Bitmap compressedImg = BitmapFactory.decodeStream(imgStream);
+                ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+                compressedImg.compress(Bitmap.CompressFormat.JPEG, 20, byteArrayOutputStream);
+                try{
+                    byteArrayOutputStream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
                 /* upload image uri to firebase storage and name the image file by user UBIT and save it in avatar folder */
-                StorageReference filepath = firebaseStorage.child("avatar").child(parseUBIT(FirebaseAuth.getInstance().getCurrentUser().getEmail()));
-                filepath.putFile(Uri.fromFile(imageFile));
-                imageFile.renameTo(new File(Environment.getExternalStorageDirectory().getAbsolutePath(), parseUBIT(FirebaseAuth.getInstance().getCurrentUser().getEmail()) + ".png"));
+                StorageReference filepath = firebaseStorage.child("avatar/").child(userUBIT);
+                String newBitmapPath = MediaStore.Images.Media.insertImage(getContentResolver(), compressedImg, userUBIT, null);
+                filepath.putFile(Uri.parse(newBitmapPath));
+//                imageFile.renameTo(new File(cacheFilePath, userUBIT + ".jpeg"));
                 setFromLocal = true;
                 break;
         }
     }
 
+    private void avatarLoading(){
+        pbLoadAvatar.setVisibility(View.VISIBLE);
+        ivProfilePicture.setVisibility(View.INVISIBLE);
+    }
+
+    private void avatarLoaded(){
+        pbLoadAvatar.setVisibility(View.INVISIBLE);
+        ivProfilePicture.setVisibility(View.VISIBLE);
+    }
 }
