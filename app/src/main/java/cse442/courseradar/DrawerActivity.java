@@ -51,8 +51,8 @@ public class DrawerActivity extends AppCompatActivity
     public static final int REQUEST_CAMERA = 1;
     public static final int REQUEST_ALBUM = 2;
     public static final int REQUEST_CROP = 3;
-    private static final int REQUEST_EXTERNAL_STORAGE = 1;
-    private static String[] PERMISSIONS_STORAGE = {
+    protected static final int REQUEST_EXTERNAL_STORAGE = 1;
+    protected static String[] PERMISSIONS_STORAGE = {
             android.Manifest.permission.READ_EXTERNAL_STORAGE,
             android.Manifest.permission.WRITE_EXTERNAL_STORAGE
     };
@@ -68,6 +68,7 @@ public class DrawerActivity extends AppCompatActivity
     protected TextView tvUserName;
     protected TextView tvUserEmail;
     protected File imageFile;
+    private  File tempImage;
     protected NavigationView navigationView;
     protected static GoogleApiClient googleApiClient;
     /* the universal drawer that shared among sub-classes */
@@ -240,9 +241,10 @@ public class DrawerActivity extends AppCompatActivity
             tvUserName.setText(parseUBIT(user.getEmail()));
             tvUserEmail.setText(user.getEmail());
             /* check if image is exsited in local repo */
-            imageFile = new File(Environment.getExternalStorageDirectory(), parseUBIT(FirebaseAuth.getInstance().getCurrentUser().getEmail()) + ".png");
-            if(imageFile.exists()){
-                ivProfilePicture.setImageURI(Uri.fromFile(imageFile));
+            tempImage = new File(Environment.getExternalStorageDirectory().getAbsolutePath(), parseUBIT(FirebaseAuth.getInstance().getCurrentUser().getEmail()) + ".png");
+            if(tempImage.exists()){
+                verifyStoragePermissions(DrawerActivity.this);
+                ivProfilePicture.setImageURI(Uri.fromFile(tempImage));
             } else {
                 if(!setFromLocal){
                 /* update user avatar by capturing the image url from firebase storage determined by user UBIT */
@@ -346,7 +348,7 @@ public class DrawerActivity extends AppCompatActivity
     /* create a image file with png format and name the file by user UBIT
      * therefore, it will overwrite the image with the newest one and save user storage */
     protected void createImageFile() {
-        imageFile = new File(Environment.getExternalStorageDirectory(), parseUBIT(FirebaseAuth.getInstance().getCurrentUser().getEmail()) + ".png");
+        imageFile = new File(Environment.getExternalStorageDirectory().getAbsolutePath(), "temp.png");
         try {
             imageFile.createNewFile();
         } catch (IOException e) {
@@ -378,15 +380,16 @@ public class DrawerActivity extends AppCompatActivity
             case REQUEST_EXTERNAL_STORAGE: {
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     Toast.makeText(this,
-                            "Permission is granted",
+                            "Permission is granted, avatar is enable",
                             Toast.LENGTH_SHORT).show();
+                    ivProfilePicture.setImageURI(Uri.fromFile(tempImage));
 
 
                 } else {
                     Toast.makeText(this,
-                            "Permission is denied",
+                            "Permission is denied, avatar is disable",
                             Toast.LENGTH_SHORT).show();
-
+                    ivProfilePicture.setImageDrawable(getDrawable(R.drawable.pic_holder));
                 }
                 return;
             }
@@ -415,13 +418,14 @@ public class DrawerActivity extends AppCompatActivity
                 }
                 break;
             case REQUEST_CROP:
-                Log.d(TAG, "is profile pic button null ? " + String.valueOf(ivProfilePicture == null));
                 ivProfilePicture.setImageURI(Uri.fromFile(imageFile));
                 /* upload image uri to firebase storage and name the image file by user UBIT and save it in avatar folder */
                 StorageReference filepath = firebaseStorage.child("avatar").child(parseUBIT(FirebaseAuth.getInstance().getCurrentUser().getEmail()));
                 filepath.putFile(Uri.fromFile(imageFile));
+                imageFile.renameTo(new File(Environment.getExternalStorageDirectory().getAbsolutePath(), parseUBIT(FirebaseAuth.getInstance().getCurrentUser().getEmail()) + ".png"));
                 setFromLocal = true;
                 break;
         }
     }
+
 }
