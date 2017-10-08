@@ -69,9 +69,11 @@ public class MainActivity extends DrawerActivity implements SearchView.OnQueryTe
 
     private static final String INSTRUCTORS = "instructors";
     private static final String COURSES= "courses";
+    private static final String RATINGS = "ratings";
     private DatabaseReference courseDB;
 
     private DatabaseReference instructorDB;
+    private DatabaseReference ratingsDB;
 
     private TextView instructorReview;
 
@@ -80,6 +82,7 @@ public class MainActivity extends DrawerActivity implements SearchView.OnQueryTe
     private String lastTimeUsedModifiedCourseID;
 
     private int countInstructors;
+    private int countReviews;
 
     private String currentInstructor;
     private String currentCourseID;
@@ -107,6 +110,7 @@ public class MainActivity extends DrawerActivity implements SearchView.OnQueryTe
 
         courseDB= FirebaseDatabase.getInstance().getReference(COURSES);
         instructorDB = FirebaseDatabase.getInstance().getReference(INSTRUCTORS);
+        ratingsDB = FirebaseDatabase.getInstance().getReference(RATINGS);
 
         /*detailed view UI elements initialization*/
         clInstructorOverview = findViewById(R.id.instructor_overview);
@@ -369,20 +373,52 @@ public class MainActivity extends DrawerActivity implements SearchView.OnQueryTe
             public void onDataChange(DataSnapshot dataSnapshot) {
 
                 HashMap<String, String> reviews = (HashMap<String, String>) dataSnapshot.getValue();
-                ArrayList<ReviewInfo> reviewInfos = new ArrayList<>();
-                for (HashMap.Entry<String, String> entry : reviews.entrySet()) {
-                    String name = entry.getKey();
-                    if (name.equals("dummy")) {
-                        continue;
+                final ArrayList<ReviewInfo> reviewInfos = new ArrayList<>();
+
+                // because there is always a dummy node, so the real size is 1 lesser
+                final int numReviews = reviews.size() - 1;
+
+                if (numReviews == 0) {
+                    ReviewInfoAdapter reviewInfoAdapter = new ReviewInfoAdapter(MainActivity.this, reviewInfos);
+                    lvReviewsList.setAdapter(reviewInfoAdapter);
+                    hideProgressBarInDetailedView();
+                } else {
+                    countReviews = 0;
+                    for (HashMap.Entry<String, String> entry : reviews.entrySet()) {
+                        final String name = entry.getKey();
+                        if (name.equals("dummy")) {
+                            continue;
+                        }
+                        ratingsDB.child(name).child(instructorName + "-" + courseID).addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                countReviews += 1;
+                                HashMap<String, Object> theStudentReviewDetail = (HashMap<String, Object>) dataSnapshot.getValue();
+                                ReviewInfo reviewInfo = new ReviewInfo(name, theStudentReviewDetail);
+                                reviewInfos.add(reviewInfo);
+                                Log.wtf(TAG, "counter reviews is: " + countReviews +" instructor name is: " + name);
+                                //TODO if the last element, then show this!
+                                if (numReviews == countReviews) {
+                                    ReviewInfoAdapter reviewInfoAdapter = new ReviewInfoAdapter(MainActivity.this, reviewInfos);
+                                    lvReviewsList.setAdapter(reviewInfoAdapter);
+                                    hideProgressBarInDetailedView();
+                                }
+                            }
+                            @Override
+                            public void onCancelled(DatabaseError databaseError) {
+
+                            }
+                        });
                     }
-                    String review = entry.getValue();
-                    Log.wtf(TAG, "name and review: " + name + ",  " + review);
-                    ReviewInfo reviewInfo = new ReviewInfo(name, review);
-                    reviewInfos.add(reviewInfo);
                 }
-                ReviewInfoAdapter reviewInfoAdapter = new ReviewInfoAdapter(MainActivity.this, reviewInfos);
-                lvReviewsList.setAdapter(reviewInfoAdapter);
-                hideProgressBarInDetailedView();
+
+
+
+
+
+
+
+
             }
 
             @Override

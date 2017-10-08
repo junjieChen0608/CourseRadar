@@ -55,7 +55,7 @@ public class InstructorResultAdapter extends ArrayAdapter<InstructorInfo> {
 
         TextView totalRatingsTextView = (TextView) listItemView.findViewById(R.id.tv_total_ratings);
 
-        totalRatingsTextView.setText("Overall  " + currentInstuctor.getOverallQuality() + " based on " + currentInstuctor.getTotalRatings() + " reviewers");
+        totalRatingsTextView.setText("Overall " + currentInstuctor.getOverallQuality() + " based on " + currentInstuctor.getTotalRatings() + " reviewers");
 
         return listItemView;
     }

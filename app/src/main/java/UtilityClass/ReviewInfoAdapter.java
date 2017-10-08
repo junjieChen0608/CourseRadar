@@ -39,16 +39,23 @@ public class ReviewInfoAdapter extends ArrayAdapter<ReviewInfo> {
         ReviewInfo currentReview = getItem(position);
 
 
-        // show instructor's full name, currently first name + last name
-        TextView nameTextView = (TextView) listItemView.findViewById(R.id.tv_name);
+        // show scores
+        TextView overallQuality = (TextView) listItemView.findViewById(R.id.tv_overall_quality);
+        overallQuality.setText("Overall: "+ currentReview.getOverallQuality());
 
-        nameTextView.setText(currentReview.getName());
+
+        TextView lectureQuality = (TextView) listItemView.findViewById(R.id.tv_lecture_quality);
+        lectureQuality.setText("Lecture Quality: "+ currentReview.getLectureQuality());
 
 
-        // show instructor's email
-        TextView reviewTextView = (TextView) listItemView.findViewById(R.id.tv_review);
+        TextView diff = (TextView) listItemView.findViewById(R.id.tv_assignment_difficulty);
+        diff.setText("Assignment Difficulty: "+ currentReview.getAssignmentDifficulty());
 
-        reviewTextView.setText(currentReview.getReview());
+
+        // show instructor's comment
+        TextView commentView = (TextView) listItemView.findViewById(R.id.tv_comment);
+        String comment = "Comment: " + currentReview.getComment();
+        commentView.setText(comment);
 
         // later it will be great if we could show profile photo of each instructor.
 
