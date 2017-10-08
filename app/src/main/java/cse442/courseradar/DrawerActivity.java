@@ -230,7 +230,7 @@ public class DrawerActivity extends AppCompatActivity
 
     /* update drawer UI element according to user's sign up status */
     protected void updateDrawerUI(FirebaseUser user){
-        Log.d(TAG, "upating UI...");
+        Log.d(TAG, "updating UI...");
 
         if(tvUserName == null || tvUserEmail == null){
             Log.wtf("update drawer UI", "This should never happen");
@@ -424,5 +424,4 @@ public class DrawerActivity extends AppCompatActivity
                 break;
         }
     }
-
 }
