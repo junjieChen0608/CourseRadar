@@ -13,6 +13,6 @@
     <string name="no_result_found_for">No result found for</string>
     <string name="overall_quality">Overall Quality:</string>
     <string name="lecture_quality">Lecture Quality:</string>
-    <string name="assignment_difficulty">Assignment Difficulty</string>
+    <string name="assignment_difficulty">Assignment Difficulty:</string>
     <string name="rate_me">Rate me!</string>
 </resources>
