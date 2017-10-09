@@ -184,9 +184,8 @@ public class MainActivity extends DrawerActivity implements SearchView.OnQueryTe
                     //TODO construct the instructor list for the course
 
                     noResult = (resultCourse == null);
-                    hideProgressBarInOverview(keyword);
 
-                    if (! noResult) {
+                    if (!noResult) {
 
                         Log.d("search test", resultCourse.getCredit());
                         Log.d("search test", resultCourse.getInstructor().toString());
@@ -199,19 +198,20 @@ public class MainActivity extends DrawerActivity implements SearchView.OnQueryTe
 
                         for (String s : instructors.keySet()) {
                             final String eachInstructorName = s;
-                            final String eachinstructorEmail = instructors.get(s);
+                            final String eachInstructorEmail = instructors.get(s);
 
                             // TODO: no need for email, instead we should have an review overview.
                             instructorDB.child(s.toUpperCase()).child("courses").child(modifiedInput).addListenerForSingleValueEvent(new ValueEventListener() {
                                 @Override
                                 public void onDataChange(DataSnapshot dataSnapshot) {
                                     HashMap<String, Long> totalRatingInfo = (HashMap<String, Long>) dataSnapshot.getValue();
-                                    instructorNames.add(new InstructorInfo(eachInstructorName, eachinstructorEmail, totalRatingInfo));
+                                    instructorNames.add(new InstructorInfo(eachInstructorName, eachInstructorEmail, totalRatingInfo));
                                     Log.wtf(TAG, "in search result, current instructor name is: " + eachInstructorName);
                                     Log.wtf(TAG, "instructor name size: " + instructorNames.size());
                                     countInstructors += 1;
                                     if (countInstructors == numInstructors) {
                                         displayInstructorsForThisCourse(instructorNames, modifiedInput);
+                                        hideProgressBarInOverview(keyword);
                                     }
                                 }
                                 @Override
@@ -221,6 +221,8 @@ public class MainActivity extends DrawerActivity implements SearchView.OnQueryTe
 
                             Log.wtf(TAG, "end of each iteration");
                         }
+                    }else{
+                        hideProgressBarInOverview(keyword);
                     }
                 }
 
@@ -229,9 +231,7 @@ public class MainActivity extends DrawerActivity implements SearchView.OnQueryTe
                     Log.d("onCancelled", "activited");
                 }
             });
-        }
-        else{
-
+        }else{
             noResult = true;
             hideProgressBarInOverview(keyword);
             Toast.makeText(this, "we only accept charecters and numbers", Toast.LENGTH_SHORT).show();
@@ -243,7 +243,6 @@ public class MainActivity extends DrawerActivity implements SearchView.OnQueryTe
         Log.wtf(TAG, "found all instructors for this courses");
         InstructorResultAdapter instructorResultAdapter = new InstructorResultAdapter(MainActivity.this, instructorNames);
         lvSearchResultList.setAdapter(instructorResultAdapter);
-        lvSearchResultList.setVisibility(View.VISIBLE);
 
         Log.wtf(TAG, "now all instructors for the particular course should be displayed in list view");
 
@@ -411,14 +410,6 @@ public class MainActivity extends DrawerActivity implements SearchView.OnQueryTe
                         });
                     }
                 }
-
-
-
-
-
-
-
-
             }
 
             @Override
@@ -473,6 +464,7 @@ public class MainActivity extends DrawerActivity implements SearchView.OnQueryTe
 
     /*hide previously shown result list or no result text view, then show progress bar*/
     private void showProgressBarInOverview(){
+        Log.d("PBO", "show");
         if(noResult){
             tvNoResult.setVisibility(View.GONE);
         } else {
@@ -483,6 +475,7 @@ public class MainActivity extends DrawerActivity implements SearchView.OnQueryTe
 
     /*show no search result or result list, then hide progress bar*/
     private void hideProgressBarInOverview(String keyword){
+        Log.d("PBO", "hide");
         if(noResult){
             String formatKeyword = "\"" + keyword + "\"";
             tvNoResult.setText(getString(R.string.no_result_found_for) + " " +formatKeyword);
@@ -495,12 +488,14 @@ public class MainActivity extends DrawerActivity implements SearchView.OnQueryTe
     }
 
     private void showProgressBarInDetailedView(){
+        Log.d("PBD", "show");
         clInstructorOverview.setVisibility(View.GONE);
         lvReviewsList.setVisibility(View.GONE);
         pbWait.setVisibility(View.VISIBLE);
     }
 
     private void hideProgressBarInDetailedView(){
+        Log.d("PBD", "hide");
         clInstructorOverview.setVisibility(View.VISIBLE);
         lvReviewsList.setVisibility(View.VISIBLE);
         pbWait.setVisibility(View.GONE);
