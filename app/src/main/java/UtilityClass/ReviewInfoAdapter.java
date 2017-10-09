@@ -9,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -58,6 +59,27 @@ public class ReviewInfoAdapter extends ArrayAdapter<ReviewInfo> {
         commentView.setText(comment);
 
         // later it will be great if we could show profile photo of each instructor.
+        ImageView profileImage = (ImageView) listItemView.findViewById(R.id.iv_pp_image);
+        switch (currentReview.getOverallQuality().toString()) {
+            case "0":
+            case "1":
+                profileImage.setImageResource(R.drawable.faceawful);
+                break;
+            case "2":
+                profileImage.setImageResource(R.drawable.facepoor);
+                break;
+            case "3":
+                profileImage.setImageResource(R.drawable.faceaverage);
+                break;
+            case "4":
+                profileImage.setImageResource(R.drawable.facegood);
+                break;
+            case "5":
+                profileImage.setImageResource(R.drawable.faceexcellent);
+                break;
+            default:
+                profileImage.setImageResource(R.drawable.pic_holder);
+        }
 
         return listItemView;
     }

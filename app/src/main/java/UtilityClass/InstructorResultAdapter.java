@@ -59,7 +59,7 @@ public class InstructorResultAdapter extends ArrayAdapter<InstructorInfo> {
 
         RatingBar overallRating = (RatingBar) listItemView.findViewById(R.id.rb_overall_quality);
         if (currentInstuctor.getTotalRatings() != 0) {
-            overallRating.setRating(currentInstuctor.getOverallQuality() / currentInstuctor.getTotalRatings());
+            overallRating.setRating((float) currentInstuctor.getOverallQuality() / currentInstuctor.getTotalRatings());
         } else {
             overallRating.setRating(0);
         }
