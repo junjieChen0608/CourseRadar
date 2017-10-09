@@ -1,4 +1,0 @@
-instance variable: int _instanceVariable
-fixed: public final static int FIX_VARIABLE
-
-

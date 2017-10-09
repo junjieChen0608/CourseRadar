@@ -125,8 +125,8 @@ public class LandingActivity extends DrawerActivity implements View.OnClickListe
                 handleSignInResult(result);
             }
         }else{
-            Log.d(TAG, "result code is not OK");
-            Toast.makeText(this, "Please check if you have Internet access", Toast.LENGTH_SHORT).show();
+            Log.d(TAG, "result code is " + resultCode);
+            Toast.makeText(this, "Sign in cancelled, or you don't have Internet access", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -217,7 +217,7 @@ public class LandingActivity extends DrawerActivity implements View.OnClickListe
             /* if this user come from other activity and clicked proceed as guest, just finish this activity without redirecting */
             Log.d(TAG, "sourceActivity: " + sourceActivity);
             if (sourceActivity.equals(TAG)){
-                startActivity(new Intent(this, MainActivity.class).setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP));
+                startActivity(new Intent(this, MainActivity.class).setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT));
             }
             finish();
         }
