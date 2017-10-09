@@ -169,8 +169,8 @@
     <!-- UI elements for search and display results -->
     <android.support.constraint.ConstraintLayout
         android:id="@+id/search_overview"
-        android:layout_width="368dp"
-        android:layout_height="551dp"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:visibility="visible"
         tools:layout_constraintTop_creator="1"
         tools:layout_constraintRight_creator="1"
