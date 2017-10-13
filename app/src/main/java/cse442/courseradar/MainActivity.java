@@ -208,8 +208,8 @@ public class MainActivity extends DrawerActivity implements SearchView.OnQueryTe
                 detailedViewIntent.putExtra("currentInstructor", currentInstructor);
                 detailedViewIntent.putExtra("currentCourseID", currentCourseID);
                 detailedViewIntent.putExtra("currentInstructorEmail", currentInstructorEmail);
-                //TODO optimize: start a new DetailedViewActivity here
-                startActivity(detailedViewIntent);
+                //start a new DetailedViewActivity here
+                startActivity(detailedViewIntent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP));
             }
         });
     }
