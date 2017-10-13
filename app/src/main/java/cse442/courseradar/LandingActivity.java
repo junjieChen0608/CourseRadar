@@ -77,10 +77,10 @@ public class LandingActivity extends DrawerActivity implements View.OnClickListe
         Bundle bundle = intentComeFrom.getExtras();
         if(bundle != null){
             sourceActivity = (String)bundle.get("source");
-            Log.d(TAG, "come from other activity " + sourceActivity);
+            Log.d("landing", "come from other activity " + sourceActivity);
         }else{
             sourceActivity = TAG;
-            Log.d(TAG, "just landed: " + sourceActivity);
+            Log.d("landing", "just landed: " + sourceActivity);
         }
 
         firebaseAuth = FirebaseAuth.getInstance();
@@ -217,9 +217,10 @@ public class LandingActivity extends DrawerActivity implements View.OnClickListe
             /* if this user come from other activity and clicked proceed as guest, just finish this activity without redirecting */
             Log.d(TAG, "sourceActivity: " + sourceActivity);
             if (sourceActivity.equals(TAG)){
-                startActivity(new Intent(this, MainActivity.class).setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT));
+                startActivity(new Intent(this, MainActivity.class).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP));
             }
             finish();
+            Log.d(TAG, "LandingActivity is finished");
         }
     }
 }

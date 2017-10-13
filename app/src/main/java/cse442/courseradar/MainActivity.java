@@ -54,22 +54,16 @@ public class MainActivity extends DrawerActivity implements SearchView.OnQueryTe
     /*search detail view elements*/
     private ListView lvInstructorInfo;
     private ConstraintLayout clInstructorOverview;
-    private TextView tvInstructorName, tvCourseID, tvOverallQuality, tvLectureQuality, tvAssignmentDifficulty;
-    private ImageView ivInstructorPhoto;
-    private Button btnClickToRate;
-    private ListView lvReviewsList;
 
     private static final String INSTRUCTORS = "instructors";
     private static final String COURSES= "courses";
     private static final String RATINGS = "ratings";
-    private DatabaseReference courseDB;
 
+    private DatabaseReference courseDB;
     private DatabaseReference instructorDB;
     private DatabaseReference ratingsDB;
 
     private TextView instructorReview;
-
-    private AlertDialog alertDialog;
 
     private String lastTimeUsedModifiedCourseID;
 
@@ -103,36 +97,7 @@ public class MainActivity extends DrawerActivity implements SearchView.OnQueryTe
         instructorDB = FirebaseDatabase.getInstance().getReference(INSTRUCTORS);
         ratingsDB = FirebaseDatabase.getInstance().getReference(RATINGS);
 
-        /*detailed view UI elements initialization*/
-        //TODO optimized: pass these information to the new DetailedViewActivity
         clInstructorOverview = findViewById(R.id.instructor_overview);
-        tvInstructorName = findViewById(R.id.tv_instructor_name);
-        tvCourseID = findViewById(R.id.tv_course_id);
-        tvOverallQuality = findViewById(R.id.tv_overall_rating);
-        tvLectureQuality = findViewById(R.id.tv_lecture_rating);
-        tvAssignmentDifficulty = findViewById(R.id.tv_assignment_difficulty);
-        ivInstructorPhoto = findViewById(R.id.iv_instructor_photo);
-        btnClickToRate = (Button) findViewById(R.id.btn_click_to_rate);
-        lvReviewsList = (ListView) findViewById(R.id.lv_reviews_list);
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-        builder.setMessage("Do you want to sign to rate?");
-        builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                Intent intent = new Intent(MainActivity.this, LandingActivity.class);
-                startActivity(intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT));
-            }
-        });
-
-        builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                alertDialog.hide();
-            }
-        });
-
-        alertDialog = builder.create();
 
     }
 
@@ -230,166 +195,24 @@ public class MainActivity extends DrawerActivity implements SearchView.OnQueryTe
 
         Log.wtf(TAG, "now all instructors for the particular course should be displayed in list view");
 
-        //TODO optimize: refactor the detailed view as a standalone activity
         lvSearchResultList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
 
-                //TODO optimize: start a new DetailedViewActivity here
-                Intent detailedViewIntent = new Intent(MainActivity.this, DetailedViewActivity.class);
                 InstructorInfo theInstructor = instructorNames.get(i);
-
-                /*make the detailed view visible*/
                 currentInstructor = theInstructor.getName().toUpperCase();
                 currentCourseID = modifiedInput;
                 currentInstructorEmail = theInstructor.getEmail();
-                showInstructorInfo(currentInstructor, currentCourseID);
 
+                Intent detailedViewIntent = new Intent(MainActivity.this, DetailedViewActivity.class);
+                detailedViewIntent.putExtra("currentInstructor", currentInstructor);
+                detailedViewIntent.putExtra("currentCourseID", currentCourseID);
+                detailedViewIntent.putExtra("currentInstructorEmail", currentInstructorEmail);
+                //TODO optimize: start a new DetailedViewActivity here
+                startActivity(detailedViewIntent);
             }
         });
     }
-
-    /**
-     *  After student chose course number, and click on the instructor,
-     *  here we show the reviews for the chosen instructor on chosen course.
-     *
-     * @param instructorName, already in uppercase, eg: "CARL ALPHANCE"
-     * @param courseID, uppcase, and no sapce, eg: "CSE250", "CSE115"
-     */
-    private void showInstructorInfo(final String instructorName, final String courseID) {
-        instructorDB.child(instructorName).child("courses").child(courseID).addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                CourseRating courseRating =  dataSnapshot.getValue(CourseRating.class);
-
-                if (courseRating != null) {
-
-                    HashMap<String, Object> hashMap = courseRating.toMap();
-                    int totalRatings = (int) hashMap.get("totalRatings");
-                    double overallQuality = calculateAvgScore((int) hashMap.get("overallQuality"), totalRatings);
-                    double lectureQuality = calculateAvgScore((int) hashMap.get("lectureQuality"), totalRatings);
-                    double assignmentDifficulty = calculateAvgScore((int) hashMap.get("assignmentDifficulty"), totalRatings);
-
-                    /*update UI element in detailed view */
-                    tvInstructorName.setText(instructorName);
-                    tvCourseID.setText(courseID);
-                    tvOverallQuality.setText(getString(R.string.overall_quality) + " " + overallQuality);
-                    tvLectureQuality.setText(getString(R.string.lecture_quality) + " " + lectureQuality);
-                    tvAssignmentDifficulty.setText(getString(R.string.assignment_difficulty) + " " + assignmentDifficulty);
-                    /*check firebase storage to show this instructor's profile photo*/
-                    Log.d(TAG, "current instructor UBIT: " + parseUBIT(currentInstructorEmail));
-                    FirebaseStorage.getInstance().getReference().child("avatar/"+parseUBIT(currentInstructorEmail))
-                            .getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-                        @Override
-                        public void onSuccess(Uri uri) {
-                            Log.d("Picasso", "found photo for" + instructorName);
-                            Picasso.with(MainActivity.this).load(uri).into(ivInstructorPhoto);
-                        }
-                    });
-
-                    showReviewsForThisInstructor(instructorName, courseID);
-
-                    Log.wtf(TAG, "visibility of lvSearchResult: " + lvSearchResultList.getVisibility() + " " + View.VISIBLE + " " + View.GONE);
-
-                    btnClickToRate.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-
-                            if (FirebaseAuth.getInstance().getCurrentUser() == null) {
-                                alertDialog.show();
-                            } else {
-                                Intent intent = new Intent(MainActivity.this, RatingActivity.class);
-                                intent.putExtra("instructorName", instructorName);
-                                intent.putExtra("courseID", courseID);
-                                startActivity(intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT));
-                            }
-                        }
-                    });
-
-                    Log.wtf(TAG, "found something for instructor: " + instructorName + " on course: " + courseID);
-                    //Toast.makeText(MainActivity.this, "successfully found something", Toast.LENGTH_SHORT).show();
-                    //Toast.makeText(MainActivity.this, "total ratings: " + totalRatings, Toast.LENGTH_SHORT).show();
-                } else {
-                    Log.wtf(TAG, "found nothing for instructor: " + instructorName + " on course: " + courseID);
-                    //Toast.makeText(MainActivity.this, "found nothing", Toast.LENGTH_SHORT).show();
-                    //Toast.makeText(MainActivity.this, instructorName + " " + courseID, Toast.LENGTH_SHORT).show();
-                }
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
-
-    }
-
-    /*helper function to calculate average score*/
-    private double calculateAvgScore(int totalScore, int numOfScores){
-        double ret = (numOfScores == 0) ? 0.0 : (totalScore * 1.0)/ numOfScores;
-        ret = Double.parseDouble(String.format("%.1f", ret));
-        return ret;
-    }
-
-    /**
-     *
-     * @param instructorName, already in uppercase, eg: "CARL ALPHANCE"
-     * @param courseID, uppercase, and no space, eg: "CSE250", "CSE115"
-     */
-    private void showReviewsForThisInstructor(final String instructorName, final String courseID) {
-
-        Log.wtf(TAG, "on show reviews for this instructor");
-
-        instructorDB.child(instructorName).child("reviews").child(courseID).addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-
-                HashMap<String, String> reviews = (HashMap<String, String>) dataSnapshot.getValue();
-                final ArrayList<ReviewInfo> reviewInfos = new ArrayList<>();
-
-                // because there is always a dummy node, so the real size is 1 lesser
-                final int numReviews = reviews.size() - 1;
-
-                if (numReviews == 0) {
-                    ReviewInfoAdapter reviewInfoAdapter = new ReviewInfoAdapter(MainActivity.this, reviewInfos);
-                    lvReviewsList.setAdapter(reviewInfoAdapter);
-                } else {
-                    countReviews = 0;
-                    for (HashMap.Entry<String, String> entry : reviews.entrySet()) {
-                        final String name = entry.getKey();
-                        if (name.equals("dummy")) {
-                            continue;
-                        }
-                        ratingsDB.child(name).child(instructorName + "-" + courseID).addListenerForSingleValueEvent(new ValueEventListener() {
-                            @Override
-                            public void onDataChange(DataSnapshot dataSnapshot) {
-                                countReviews += 1;
-                                HashMap<String, Object> theStudentReviewDetail = (HashMap<String, Object>) dataSnapshot.getValue();
-                                ReviewInfo reviewInfo = new ReviewInfo(name, theStudentReviewDetail);
-                                reviewInfos.add(reviewInfo);
-                                Log.wtf(TAG, "counter reviews is: " + countReviews +" instructor name is: " + name);
-                                //if the last element, then show this!
-                                if (numReviews == countReviews) {
-                                    ReviewInfoAdapter reviewInfoAdapter = new ReviewInfoAdapter(MainActivity.this, reviewInfos);
-                                    lvReviewsList.setAdapter(reviewInfoAdapter);
-                                }
-                            }
-                            @Override
-                            public void onCancelled(DatabaseError databaseError) {
-
-                            }
-                        });
-                    }
-                }
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
-    }
-
 
     /**
      *  If we are looking at instructor's review, then press back goes to the search result.
@@ -405,14 +228,6 @@ public class MainActivity extends DrawerActivity implements SearchView.OnQueryTe
         if (noResult) {
             lvSearchResultList.setVisibility(View.GONE);
             super.onBackPressed();
-        } else if (clSearchOverview.getVisibility() == View.GONE) {
-            /*make search detailed view gone*/
-            ivInstructorPhoto.setImageResource(R.drawable.pic_holder);
-            Log.d("vis", "onBackPressed: clSearchDetailedView GONE");
-
-            onQueryTextSubmit(currentCourseID);
-            clSearchOverview.setVisibility(View.VISIBLE);
-
         } else {
             super.onBackPressed();
         }
