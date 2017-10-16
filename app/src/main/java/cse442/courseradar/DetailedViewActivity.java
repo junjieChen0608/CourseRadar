@@ -11,6 +11,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -45,16 +46,17 @@ public class DetailedViewActivity extends AppCompatActivity {
     private ImageView ivInstructorPhoto;
     private AlertDialog signInAlertDialog;
     private Button btnClickToRate;
+    private ProgressBar pbReviewListWait;
     private ListView lvReviewsList;
-    private String currentInstructor;
-    private String currentCourseID;
-    private String currentInstructorEmail;
+    private String currentInstructor, currentCourseID, currentInstructorEmail;
     private int countInstructors, countReviews;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detailed_view);
+
+        pbReviewListWait = findViewById(R.id.pb_review_list_wait);
 
         courseDB= FirebaseDatabase.getInstance().getReference(COURSES);
         instructorDB = FirebaseDatabase.getInstance().getReference(INSTRUCTORS);
@@ -104,6 +106,24 @@ public class DetailedViewActivity extends AppCompatActivity {
             }
         });
         signInAlertDialog = builder.create();
+
+        /*
+            "RATE ME!" button logic
+         */
+        btnClickToRate.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                if (FirebaseAuth.getInstance().getCurrentUser() == null) {
+                    signInAlertDialog.show();
+                } else {
+                    Intent ratingIntent = new Intent(DetailedViewActivity.this, RatingActivity.class);
+                    ratingIntent.putExtra("instructorName", currentInstructor);
+                    ratingIntent.putExtra("courseID", currentCourseID);
+                    startActivity(ratingIntent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP));
+                }
+            }
+        });
     }
 
     /**
@@ -146,28 +166,9 @@ public class DetailedViewActivity extends AppCompatActivity {
 
                     showReviewsForThisInstructor(instructorName, courseID);
 
-                    btnClickToRate.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-
-                            if (FirebaseAuth.getInstance().getCurrentUser() == null) {
-                                signInAlertDialog.show();
-                            } else {
-                                Intent ratingIntent = new Intent(DetailedViewActivity.this, RatingActivity.class);
-                                ratingIntent.putExtra("instructorName", instructorName);
-                                ratingIntent.putExtra("courseID", courseID);
-                                startActivity(ratingIntent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP));
-                            }
-                        }
-                    });
-
                     Log.wtf(TAG, "found something for instructor: " + instructorName + " on course: " + courseID);
-                    //Toast.makeText(MainActivity.this, "successfully found something", Toast.LENGTH_SHORT).show();
-                    //Toast.makeText(MainActivity.this, "total ratings: " + totalRatings, Toast.LENGTH_SHORT).show();
                 } else {
                     Log.wtf(TAG, "found nothing for instructor: " + instructorName + " on course: " + courseID);
-                    //Toast.makeText(MainActivity.this, "found nothing", Toast.LENGTH_SHORT).show();
-                    //Toast.makeText(MainActivity.this, instructorName + " " + courseID, Toast.LENGTH_SHORT).show();
                 }
             }
 
@@ -206,6 +207,7 @@ public class DetailedViewActivity extends AppCompatActivity {
                 if (numReviews == 0) {
                     ReviewInfoAdapter reviewInfoAdapter = new ReviewInfoAdapter(DetailedViewActivity.this, reviewInfos);
                     lvReviewsList.setAdapter(reviewInfoAdapter);
+                    reviewListReady();
                 } else {
                     countReviews = 0;
                     for (HashMap.Entry<String, String> entry : reviews.entrySet()) {
@@ -225,12 +227,12 @@ public class DetailedViewActivity extends AppCompatActivity {
                                 if (numReviews == countReviews) {
                                     ReviewInfoAdapter reviewInfoAdapter = new ReviewInfoAdapter(DetailedViewActivity.this, reviewInfos);
                                     lvReviewsList.setAdapter(reviewInfoAdapter);
+                                    reviewListReady();
                                 }
                             }
-                            @Override
-                            public void onCancelled(DatabaseError databaseError) {
 
-                            }
+                            @Override
+                            public void onCancelled(DatabaseError databaseError) { }
                         });
                     }
                 }
@@ -239,6 +241,11 @@ public class DetailedViewActivity extends AppCompatActivity {
             @Override
             public void onCancelled(DatabaseError databaseError) { }
         });
+    }
+
+    private void reviewListReady(){
+        pbReviewListWait.setVisibility(View.GONE);
+        lvReviewsList.setVisibility(View.VISIBLE);
     }
 
     private String parseUBIT(String email){
