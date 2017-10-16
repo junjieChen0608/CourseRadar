@@ -74,7 +74,7 @@ public class RatingActivity extends AppCompatActivity {
 
                 overallQuality = (int) rbOverallQuality.getRating();
                 lectureQuality = (int) rbLectureQuality.getRating();
-                assignmentDiff = (int)rbAssignmentDiff.getRating();
+                assignmentDiff = (int) rbAssignmentDiff.getRating();
 
                 Log.d(TAG, "Instructor name: " + instructorName + "\n" +
                             "Course ID: " + courseID + "\n" +
@@ -139,7 +139,7 @@ public class RatingActivity extends AppCompatActivity {
 
     }
 
-    /*get rating from both database*/
+    /*get rating data from designated database reference*/
     private void getRatingDatabase(final String whichDB){
 
         ValueEventListener valueEventListener = new ValueEventListener() {

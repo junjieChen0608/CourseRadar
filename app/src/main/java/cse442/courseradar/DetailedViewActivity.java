@@ -35,10 +35,8 @@ public class DetailedViewActivity extends AppCompatActivity {
 
     private static final String TAG = DetailedViewActivity.class.getSimpleName();
     private static final String INSTRUCTORS = "instructors";
-    private static final String COURSES= "courses";
     private static final String RATINGS = "ratings";
 
-    private DatabaseReference courseDB;
     private DatabaseReference instructorDB;
     private DatabaseReference ratingsDB;
 
@@ -58,7 +56,6 @@ public class DetailedViewActivity extends AppCompatActivity {
 
         pbReviewListWait = findViewById(R.id.pb_review_list_wait);
 
-        courseDB= FirebaseDatabase.getInstance().getReference(COURSES);
         instructorDB = FirebaseDatabase.getInstance().getReference(INSTRUCTORS);
         ratingsDB = FirebaseDatabase.getInstance().getReference(RATINGS);
 
@@ -91,6 +88,11 @@ public class DetailedViewActivity extends AppCompatActivity {
         builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
+                /*
+                    if the user decide to log in to rate, pass these extra information
+                    to LandingActivity, so that after LandingActivity handled log in logic,
+                    it has enough information to start RatingActivity
+                 */
                 Intent signInIntent = new Intent(DetailedViewActivity.this, LandingActivity.class);
                 signInIntent.putExtra("source", TAG);
                 signInIntent.putExtra("instructorName", currentInstructor);
@@ -115,8 +117,10 @@ public class DetailedViewActivity extends AppCompatActivity {
             public void onClick(View view) {
 
                 if (FirebaseAuth.getInstance().getCurrentUser() == null) {
+                    // if the user is not logged in, prompt to ask for log in
                     signInAlertDialog.show();
                 } else {
+                    // if the user logged in, pass extra information to start a new RatingActivity
                     Intent ratingIntent = new Intent(DetailedViewActivity.this, RatingActivity.class);
                     ratingIntent.putExtra("instructorName", currentInstructor);
                     ratingIntent.putExtra("courseID", currentCourseID);
@@ -127,10 +131,12 @@ public class DetailedViewActivity extends AppCompatActivity {
     }
 
     /**
-     *  After student chose course number, and click on the instructor,
-     *  here we show the reviews for the chosen instructor on chosen course.
      *
-     * @param instructorName, already in uppercase, eg: "CARL ALPHANCE"
+     * Display detailed view for the specific instructor's course,
+     * It will initialize the instructor's rating overview
+     * then populate the reviews ListView
+     *
+     * @param instructorName, already in uppercase, eg: "CARL ALPHONCE"
      * @param courseID, uppcase, and no sapce, eg: "CSE250", "CSE115"
      */
     private void showInstructorInfo(final String instructorName, final String courseID) {
@@ -153,6 +159,7 @@ public class DetailedViewActivity extends AppCompatActivity {
                     tvOverallQuality.setText(getString(R.string.overall_quality) + " " + overallQuality);
                     tvLectureQuality.setText(getString(R.string.lecture_quality) + " " + lectureQuality);
                     tvAssignmentDifficulty.setText(getString(R.string.assignment_difficulty) + " " + assignmentDifficulty);
+
                     /*check firebase storage to show this instructor's profile photo*/
                     Log.d(TAG, "current instructor UBIT: " + parseUBIT(currentInstructorEmail));
                     FirebaseStorage.getInstance().getReference().child("avatar/"+parseUBIT(currentInstructorEmail))
@@ -178,7 +185,7 @@ public class DetailedViewActivity extends AppCompatActivity {
 
     }
 
-    /*helper function to calculate average score*/
+    /*calculate average score*/
     private double calculateAvgScore(int totalScore, int numOfScores){
         double ret = (numOfScores == 0) ? 0.0 : (totalScore * 1.0)/ numOfScores;
         ret = Double.parseDouble(String.format("%.1f", ret));
@@ -186,25 +193,28 @@ public class DetailedViewActivity extends AppCompatActivity {
     }
 
     /**
+     * display all reviews and ratings for this instructor's this course
      *
-     * @param instructorName, already in uppercase, eg: "CARL ALPHANCE"
+     * @param instructorName, already in uppercase, eg: "CARL ALPHONCE"
      * @param courseID, uppercase, and no space, eg: "CSE250", "CSE115"
      */
     private void showReviewsForThisInstructor(final String instructorName, final String courseID) {
 
         Log.wtf(TAG, "on show reviews for this instructor");
 
+        // grab all reviews in this instructor's this course's review section
         instructorDB.child(instructorName).child("reviews").child(courseID).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
 
-                HashMap<String, String> reviews = (HashMap<String, String>) dataSnapshot.getValue();
+                HashMap<String, String> reviews = (HashMap<String, String>) dataSnapshot.getValue(); // all students review
                 final ArrayList<ReviewInfo> reviewInfos = new ArrayList<>();
 
-                // because there is always a dummy node, so the real size is 1 lesser
+                // because there is always a dummy review, so the real size is 1 lesser
                 final int numReviews = reviews.size() - 1;
 
                 if (numReviews == 0) {
+                    // no ratings and reviews
                     ReviewInfoAdapter reviewInfoAdapter = new ReviewInfoAdapter(DetailedViewActivity.this, reviewInfos);
                     lvReviewsList.setAdapter(reviewInfoAdapter);
                     reviewListReady();
@@ -215,6 +225,12 @@ public class DetailedViewActivity extends AppCompatActivity {
                         if (name.equals("dummy")) {
                             continue;
                         }
+
+                        /*
+                            lookup this student's detailed review for this instructor-course combination,
+                            use it to instantiate a ReviewInfo object,
+                            then add this object to reviewInfos list for ListView usage
+                         */
                         ratingsDB.child(name).child(instructorName + "-" + courseID).addListenerForSingleValueEvent(new ValueEventListener() {
                             @Override
                             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -223,7 +239,11 @@ public class DetailedViewActivity extends AppCompatActivity {
                                 ReviewInfo reviewInfo = new ReviewInfo(name, theStudentReviewDetail);
                                 reviewInfos.add(reviewInfo);
                                 Log.wtf(TAG, "counter reviews is: " + countReviews +" instructor name is: " + name);
-                                //if the last element, then show this!
+
+                                /*
+                                    use a local counter to detect end of iteration,
+                                    a workaround of asynchronous firebase callback
+                                 */
                                 if (numReviews == countReviews) {
                                     ReviewInfoAdapter reviewInfoAdapter = new ReviewInfoAdapter(DetailedViewActivity.this, reviewInfos);
                                     lvReviewsList.setAdapter(reviewInfoAdapter);
@@ -243,6 +263,7 @@ public class DetailedViewActivity extends AppCompatActivity {
         });
     }
 
+    // hide the progress bar when the ListView content is available
     private void reviewListReady(){
         pbReviewListWait.setVisibility(View.GONE);
         lvReviewsList.setVisibility(View.VISIBLE);

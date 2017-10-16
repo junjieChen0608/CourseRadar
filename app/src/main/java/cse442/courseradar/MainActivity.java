@@ -1,42 +1,31 @@
 package cse442.courseradar;
 
-import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.constraint.ConstraintLayout;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.storage.FirebaseStorage;
-import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import UtilityClass.CourseRating;
 import UtilityClass.InstructorInfo;
 import UtilityClass.InstructorResultAdapter;
-import UtilityClass.ReviewInfo;
-import UtilityClass.ReviewInfoAdapter;
-import UtilityClass.courseData;
+import UtilityClass.CourseData;
 
 
 public class MainActivity extends DrawerActivity implements SearchView.OnQueryTextListener{
@@ -46,22 +35,18 @@ public class MainActivity extends DrawerActivity implements SearchView.OnQueryTe
     private ProgressBar pbWait;
 
     /*search overview elements*/
-    private ConstraintLayout clSearchOverview;
     private ListView lvSearchResultList;
     private TextView tvNoResult;
     private boolean noResult;
 
     /*search detail view elements*/
     private ListView lvInstructorInfo;
-    private ConstraintLayout clInstructorOverview;
 
     private static final String INSTRUCTORS = "instructors";
     private static final String COURSES= "courses";
     private static final String RATINGS = "ratings";
 
-    private DatabaseReference courseDB;
-    private DatabaseReference instructorDB;
-    private DatabaseReference ratingsDB;
+    private DatabaseReference courseDB, instructorDB, ratingsDB;
 
     private TextView instructorReview;
 
@@ -70,9 +55,7 @@ public class MainActivity extends DrawerActivity implements SearchView.OnQueryTe
     private int countInstructors;
     private int countReviews;
 
-    private String currentInstructor;
-    private String currentCourseID;
-    private String currentInstructorEmail;
+    private String currentInstructor, currentCourseID, currentInstructorEmail;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,15 +63,14 @@ public class MainActivity extends DrawerActivity implements SearchView.OnQueryTe
         LayoutInflater inflater = (LayoutInflater) this.getSystemService(LAYOUT_INFLATER_SERVICE);
         View contentView = inflater.inflate(R.layout.activity_main, null, false);
         drawer.addView(contentView, 0);
-        unlockDrawer();
-        clSearchOverview = (ConstraintLayout) findViewById(R.id.search_overview);
+
         svSearchBar = (SearchView) findViewById(R.id.sv_search_bar);
         svSearchBar.setIconifiedByDefault(false);
         svSearchBar.setOnQueryTextListener(this);
         pbWait = (ProgressBar) findViewById(R.id.pb_wait);
 
         lvSearchResultList = (ListView) findViewById(R.id.lv_instructorData);
-        lvInstructorInfo = (ListView) findViewById(R.id.lv_instructor_info);
+        lvInstructorInfo = (ListView) findViewById(R.id.lv_instructor_info); // not used for now
 
         tvNoResult = (TextView) findViewById(R.id.tv_no_result);
         noResult = true;
@@ -96,16 +78,14 @@ public class MainActivity extends DrawerActivity implements SearchView.OnQueryTe
         courseDB= FirebaseDatabase.getInstance().getReference(COURSES);
         instructorDB = FirebaseDatabase.getInstance().getReference(INSTRUCTORS);
         ratingsDB = FirebaseDatabase.getInstance().getReference(RATINGS);
-
-        clInstructorOverview = findViewById(R.id.instructor_overview);
-
+        unlockDrawer();
     }
 
     @Override
     protected void onStart() {
         super.onStart();
         Log.wtf("onStart","MainActivity onStart");
-        /*mark current activity as this activity*/
+        /*mark this activity as current activity*/
         currentActivity = this;
         if(FirebaseAuth.getInstance().getCurrentUser() == null){
             Log.wtf(TAG + " onStart", "user is signed out");
@@ -115,42 +95,41 @@ public class MainActivity extends DrawerActivity implements SearchView.OnQueryTe
 
     @Override
     public boolean onQueryTextSubmit(String input) {
-        input = input.replaceAll(" ", "");
+        input = input.replaceAll(" ", ""); // remove all spaces in the keyword
         final String keyword = input;
         showProgressBarInOverview();
         Log.d(TAG, "search this: " + input);
         //improve the illegal input detection
-        if(input!= null && !input.isEmpty()&& input.matches("\\w+")){
-            input= input.toUpperCase();
-            final String modifiedInput = input;
+        if(input != null && !input.isEmpty() && input.matches("\\w+")){
+            input = input.toUpperCase();
+            final String capitalizedCourseID = input;
 
+            /* lookup course databse for this course */
             courseDB.child(input).addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
-                    courseData resultCourse= dataSnapshot.getValue(courseData.class);
-                    /*here it gets the courseData, it has a hashmap to store instructors and their email
-                    * take those to form list*/
-                    //construct the instructor list for the course
+                    CourseData resultCourse = dataSnapshot.getValue(CourseData.class);
 
                     noResult = (resultCourse == null);
 
                     if (!noResult) {
-
+                        // found result for given keyword
                         Log.d("search test", resultCourse.getCredit());
                         Log.d("search test", resultCourse.getInstructor().toString());
 
-                        HashMap<String, String> instructors = resultCourse.getInstructor();
-                        final ArrayList<InstructorInfo> instructorNames = new ArrayList<InstructorInfo>();
+                        HashMap<String, String> instructors = resultCourse.getInstructor(); // this map has all the instructors that teach this course
+                        final ArrayList<InstructorInfo> instructorNames = new ArrayList<InstructorInfo>(); // list that used in search result ListView
 
                         final int numInstructors = instructors.size();
                         countInstructors = 0;
 
+                        /* now iterate on the instructor map to find each instructor's review of this course*/
                         for (String s : instructors.keySet()) {
                             final String eachInstructorName = s;
                             final String eachInstructorEmail = instructors.get(s);
 
                             //no need for email, instead we should have an review overview.
-                            instructorDB.child(s.toUpperCase()).child("courses").child(modifiedInput).addListenerForSingleValueEvent(new ValueEventListener() {
+                            instructorDB.child(s.toUpperCase()).child("courses").child(capitalizedCourseID).addListenerForSingleValueEvent(new ValueEventListener() {
                                 @Override
                                 public void onDataChange(DataSnapshot dataSnapshot) {
                                     HashMap<String, Long> totalRatingInfo = (HashMap<String, Long>) dataSnapshot.getValue();
@@ -159,18 +138,20 @@ public class MainActivity extends DrawerActivity implements SearchView.OnQueryTe
                                     Log.wtf(TAG, "instructor name size: " + instructorNames.size());
                                     countInstructors += 1;
                                     if (countInstructors == numInstructors) {
-                                        displayInstructorsForThisCourse(instructorNames, modifiedInput);
+                                        /*
+                                            iteration complete, display search result
+                                            the reason why use a counter to identify end of iteration is due to asynchronous nature of firebase callback
+                                         */
+                                        displayInstructorsForThisCourse(instructorNames, capitalizedCourseID);
                                         hideProgressBarInOverview(keyword);
                                     }
                                 }
                                 @Override
-                                public void onCancelled(DatabaseError databaseError) {
-                                }
+                                public void onCancelled(DatabaseError databaseError) { }
                             });
-
-                            Log.wtf(TAG, "end of each iteration");
                         }
                     }else{
+                        // legal keyword, no result found
                         hideProgressBarInOverview(keyword);
                     }
                 }
@@ -181,6 +162,7 @@ public class MainActivity extends DrawerActivity implements SearchView.OnQueryTe
                 }
             });
         }else{
+            // illegal keyword, no result found
             noResult = true;
             hideProgressBarInOverview(keyword);
             Toast.makeText(this, "we only accept charecters and numbers", Toast.LENGTH_SHORT).show();
@@ -188,7 +170,11 @@ public class MainActivity extends DrawerActivity implements SearchView.OnQueryTe
         return false;
     }
 
-    private void displayInstructorsForThisCourse(final ArrayList<InstructorInfo> instructorNames, final String modifiedInput) {
+    /*
+        display instructors in the ListView
+        set up click listener for each ListView item
+    */
+    private void displayInstructorsForThisCourse(final ArrayList<InstructorInfo> instructorNames, final String capitalizedCourseID) {
         Log.wtf(TAG, "found all instructors for this courses");
         InstructorResultAdapter instructorResultAdapter = new InstructorResultAdapter(MainActivity.this, instructorNames);
         lvSearchResultList.setAdapter(instructorResultAdapter);
@@ -201,37 +187,29 @@ public class MainActivity extends DrawerActivity implements SearchView.OnQueryTe
 
                 InstructorInfo theInstructor = instructorNames.get(i);
                 currentInstructor = theInstructor.getName().toUpperCase();
-                currentCourseID = modifiedInput;
+                currentCourseID = capitalizedCourseID;
                 currentInstructorEmail = theInstructor.getEmail();
 
                 Intent detailedViewIntent = new Intent(MainActivity.this, DetailedViewActivity.class);
                 detailedViewIntent.putExtra("currentInstructor", currentInstructor);
                 detailedViewIntent.putExtra("currentCourseID", currentCourseID);
                 detailedViewIntent.putExtra("currentInstructorEmail", currentInstructorEmail);
-                //start a new DetailedViewActivity here
+                /*
+                    start a new DetailedViewActivity here, SINGLE_TOP flag will prevent
+                    fast click invoke multiple instances
+                 */
                 startActivity(detailedViewIntent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP));
             }
         });
     }
 
-    /**
-     *  If we are looking at instructor's review, then press back goes to the search result.
-     *  If we are on the search result, then press back behaves just like before.
-     */
     @Override
     public void onBackPressed() {
-
         if(pbWait.getVisibility() == View.VISIBLE){
+            // while loading, press back will do nothing
             return;
         }
-
-        if (noResult) {
-            lvSearchResultList.setVisibility(View.GONE);
-            super.onBackPressed();
-        } else {
-            super.onBackPressed();
-        }
-
+        super.onBackPressed();
     }
 
     @Override

@@ -6,16 +6,16 @@ import java.util.HashMap;
  * Created by chandx on 9/19/17.
  */
 
-public class instructorData {
+public class InstructorData {
     private HashMap<String, HashMap<String, Long>> courses;
     private String email;
     private String firstName;
     private String lastName;
     private HashMap<String, HashMap<String, String>> reviews;
 
-    public instructorData(){}
+    public InstructorData(){}
 
-    public instructorData(HashMap<String, HashMap<String, Long>> remoteCourses, String remoteEmail, String remoteFirstName, String remoteLastName, HashMap<String, HashMap<String, String>> remoteReviews){
+    public InstructorData(HashMap<String, HashMap<String, Long>> remoteCourses, String remoteEmail, String remoteFirstName, String remoteLastName, HashMap<String, HashMap<String, String>> remoteReviews){
         courses= remoteCourses;
         email= remoteEmail;
         firstName= remoteFirstName;

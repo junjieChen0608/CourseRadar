@@ -16,14 +16,14 @@ import cse442.courseradar.R;
  * Created by yang on 9/25/17.
  */
 
-public class InstructorDataAdapter extends ArrayAdapter<instructorData> {
+public class InstructorDataAdapter extends ArrayAdapter<InstructorData> {
 
     /**
      *
      * @param context
      * @param pps:
      */
-    public InstructorDataAdapter(Activity context, ArrayList<instructorData> pps) {
+    public InstructorDataAdapter(Activity context, ArrayList<InstructorData> pps) {
         super(context, 0, pps);
     }
 
@@ -47,7 +47,7 @@ public class InstructorDataAdapter extends ArrayAdapter<instructorData> {
             listItemView = LayoutInflater.from(getContext()).inflate(R.layout.instructor_data_list_item, parent, false);
         }
 
-        instructorData currentInstData = getItem(position);
+        InstructorData currentInstData = getItem(position);
 
 
         // show instructor's full name, currently first name + last name
