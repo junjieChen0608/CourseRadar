@@ -61,7 +61,6 @@ public class DetailedViewActivity extends AppCompatActivity {
         ratingsDB = FirebaseDatabase.getInstance().getReference(RATINGS);
 
         /*detailed view UI elements initialization*/
-        //TODO optimized: pass these information to the new DetailedViewActivity
         tvInstructorName = findViewById(R.id.tv_instructor_name);
         tvCourseID = findViewById(R.id.tv_course_id);
         tvOverallQuality = findViewById(R.id.tv_overall_rating);
@@ -71,14 +70,30 @@ public class DetailedViewActivity extends AppCompatActivity {
         btnClickToRate = (Button) findViewById(R.id.btn_click_to_rate);
         lvReviewsList = (ListView) findViewById(R.id.lv_reviews_list);
 
+        /*
+            get this instructor's information from MainActivity intent extra
+         */
+        Bundle extra = this.getIntent().getExtras();
+        if(extra != null){
+            currentInstructor = extra.getString("currentInstructor");
+            currentCourseID = extra.getString("currentCourseID");
+            currentInstructorEmail = extra.getString("currentInstructorEmail");
+            showInstructorInfo(currentInstructor, currentCourseID);
+        }
+
+        /*
+            build the sign in alert dialog for "RATE ME" button
+         */
         AlertDialog.Builder builder = new AlertDialog.Builder(DetailedViewActivity.this);
-        builder.setMessage("Do you want to sign to rate?");
+        builder.setMessage("Do you want to sign in to rate?");
         builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                Intent landingIntent = new Intent(DetailedViewActivity.this, LandingActivity.class);
-                landingIntent.putExtra("source", TAG);
-                startActivity(landingIntent);
+                Intent signInIntent = new Intent(DetailedViewActivity.this, LandingActivity.class);
+                signInIntent.putExtra("source", TAG);
+                signInIntent.putExtra("instructorName", currentInstructor);
+                signInIntent.putExtra("courseID", currentCourseID);
+                startActivity(signInIntent);
             }
         });
 
@@ -89,15 +104,6 @@ public class DetailedViewActivity extends AppCompatActivity {
             }
         });
         signInAlertDialog = builder.create();
-
-        Bundle extra = this.getIntent().getExtras();
-        if(extra != null){
-            currentInstructor = extra.getString("currentInstructor");
-            currentCourseID = extra.getString("currentCourseID");
-            currentInstructorEmail = extra.getString("currentInstructorEmail");
-            showInstructorInfo(currentInstructor, currentCourseID);
-        }
-
     }
 
     /**
@@ -147,10 +153,10 @@ public class DetailedViewActivity extends AppCompatActivity {
                             if (FirebaseAuth.getInstance().getCurrentUser() == null) {
                                 signInAlertDialog.show();
                             } else {
-                                Intent intent = new Intent(DetailedViewActivity.this, RatingActivity.class);
-                                intent.putExtra("instructorName", instructorName);
-                                intent.putExtra("courseID", courseID);
-                                startActivity(intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT));
+                                Intent ratingIntent = new Intent(DetailedViewActivity.this, RatingActivity.class);
+                                ratingIntent.putExtra("instructorName", instructorName);
+                                ratingIntent.putExtra("courseID", courseID);
+                                startActivity(ratingIntent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP));
                             }
                         }
                     });

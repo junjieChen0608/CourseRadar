@@ -55,6 +55,7 @@ public class LandingActivity extends DrawerActivity implements View.OnClickListe
 
     /* from which activity does LandingActivity start */
     private String sourceActivity;
+    private Bundle bundle;
 
     private FirebaseAuth firebaseAuth;
     private FirebaseUser firebaseUser;
@@ -73,8 +74,8 @@ public class LandingActivity extends DrawerActivity implements View.OnClickListe
         tvAsGuest.setOnClickListener(this);
 
         /* Get Extra from Bundle to check where the user starts this activity */
-        Intent intentComeFrom = getIntent();
-        Bundle bundle = intentComeFrom.getExtras();
+        Intent sourceIntent = getIntent();
+        bundle = sourceIntent.getExtras();
         if(bundle != null){
             sourceActivity = (String)bundle.get("source");
             Log.d("landing", "come from other activity " + sourceActivity);
@@ -166,13 +167,21 @@ public class LandingActivity extends DrawerActivity implements View.OnClickListe
                                 * 1, update the side nav drawer to signed status
                                 *
                                 * 2.1 if user come from LandingActivity and signed in, redirect to MainActivity
-                                * 2.2 else user come from other activity, just finish this activity
+                                * 2.2 else if user come from DetailedViewActivity, just finish this activity
                                 *
                                 * */
 
-                                if(sourceActivity != null && sourceActivity.equals(TAG)){
-                                    startActivity(new Intent(LandingActivity.this, MainActivity.class).setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT));
+                                if(sourceActivity != null){
+                                    if(sourceActivity.equals(TAG)){
+                                        startActivity(new Intent(LandingActivity.this, MainActivity.class).setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT));
+                                    }else if(sourceActivity.equals("DetailedViewActivity")){
+                                        Intent ratingIntent = new Intent(LandingActivity.this, RatingActivity.class);
+                                        ratingIntent.putExtra("instructorName", bundle.getString("instructorName"));
+                                        ratingIntent.putExtra("courseID", bundle.getString("courseID"));
+                                        startActivity(ratingIntent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP));
+                                    }
                                 }
+                                Log.d(TAG, "Successfully logged in");
                                 finish();
                             }
                         }else{
