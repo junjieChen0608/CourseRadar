@@ -7,8 +7,6 @@
     android:layout_height="match_parent">
 
 
-
-
     <TextView
         android:paddingLeft="20dp"
         android:textStyle="bold"
@@ -87,23 +85,5 @@
         android:layout_marginLeft="8dp"
         app:layout_constraintLeft_toLeftOf="parent" />
 
-    <!--<LinearLayout-->
-    <!--android:padding="16dp"-->
-    <!--android:orientation="vertical"-->
-    <!--android:layout_width="match_parent"-->
-    <!--android:layout_height="wrap_content">-->
-    <!--<TextView-->
-    <!--android:id="@+id/tw_name"-->
-    <!--tools:text="name"-->
-    <!--android:layout_width="match_parent"-->
-    <!--android:layout_height="wrap_content" />-->
-
-    <!--<TextView-->
-    <!--android:id="@+id/tw_email"-->
-    <!--tools:text="email"-->
-    <!--android:layout_width="match_parent"-->
-    <!--android:layout_height="wrap_content" />-->
-    <!--</LinearLayout>-->
-    <!---->
 
 </android.support.constraint.ConstraintLayout>

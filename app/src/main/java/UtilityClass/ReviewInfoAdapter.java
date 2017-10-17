@@ -26,13 +26,14 @@ public class ReviewInfoAdapter extends ArrayAdapter<ReviewInfo> {
         super(context, 0, pps);
     }
 
+
     @NonNull
     @Override
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
 
         View listItemView = convertView;
 
-        // we have to inflate a instructor_data_list_item when there is no view available
+        // we have to inflate a reviews_list_item when there is no view available
         if (listItemView == null) {
             listItemView = LayoutInflater.from(getContext()).inflate(R.layout.reviews_list_item, parent, false);
         }
@@ -40,7 +41,7 @@ public class ReviewInfoAdapter extends ArrayAdapter<ReviewInfo> {
         ReviewInfo currentReview = getItem(position);
 
 
-        // show scores
+        // show three scores
         TextView overallQuality = (TextView) listItemView.findViewById(R.id.tv_overall_quality);
         overallQuality.setText("Overall: "+ currentReview.getOverallQuality());
 
@@ -53,12 +54,14 @@ public class ReviewInfoAdapter extends ArrayAdapter<ReviewInfo> {
         diff.setText("Assignment Difficulty: "+ currentReview.getAssignmentDifficulty());
 
 
-        // show instructor's comment
+        // show the comment from this student for tor this particular course
         TextView commentView = (TextView) listItemView.findViewById(R.id.tv_comment);
         String comment = "Comment: " + currentReview.getComment();
         commentView.setText(comment);
 
-        // later it will be great if we could show profile photo of each instructor.
+
+        // show a face expression according to the overall quality
+        // note that 0 and 1 point in overall quality both will be setted to face awful
         ImageView profileImage = (ImageView) listItemView.findViewById(R.id.iv_pp_image);
         switch (currentReview.getOverallQuality().toString()) {
             case "0":
@@ -78,6 +81,7 @@ public class ReviewInfoAdapter extends ArrayAdapter<ReviewInfo> {
                 profileImage.setImageResource(R.drawable.faceexcellent);
                 break;
             default:
+                // this shoud never happen, it is only used for debug in developing
                 profileImage.setImageResource(R.drawable.pic_holder);
         }
 

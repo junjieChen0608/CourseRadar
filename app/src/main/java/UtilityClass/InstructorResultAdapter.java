@@ -39,24 +39,17 @@ public class InstructorResultAdapter extends ArrayAdapter<InstructorInfo> {
 
         InstructorInfo currentInstuctor = getItem(position);
 
-
-        // show instructor's full name, currently first name + last name
+        // show instructor's full name
         TextView nameTextView = (TextView) listItemView.findViewById(R.id.tv_name);
-
         nameTextView.setText(currentInstuctor.getName());
 
 
         // show instructor's email
         TextView emailTextView = (TextView) listItemView.findViewById(R.id.tv_email);
-
         emailTextView.setText(currentInstuctor.getEmail());
 
-        // later it will be great if we could show profile photo of each instructor.
 
-//        TextView totalRatingsTextView = (TextView) listItemView.findViewById(R.id.tv_total_ratings);
-//        totalRatingsTextView.setText("Overall " + currentInstuctor.getOverallQuality() + " based on " + currentInstuctor.getTotalRatings() + " reviewers");
-
-
+        // show rating bar according to the overall quality
         RatingBar overallRating = (RatingBar) listItemView.findViewById(R.id.rb_overall_quality);
         if (currentInstuctor.getTotalRatings() != 0) {
             overallRating.setRating((float) currentInstuctor.getOverallQuality() / currentInstuctor.getTotalRatings());
@@ -64,6 +57,7 @@ public class InstructorResultAdapter extends ArrayAdapter<InstructorInfo> {
             overallRating.setRating(0);
         }
 
+        // a text information telling user the number of reviews
         TextView totalRatingsTextView = (TextView) listItemView.findViewById(R.id.tv_total_ratings);
         totalRatingsTextView.setText(currentInstuctor.getTotalRatings() + " reviews");
 
