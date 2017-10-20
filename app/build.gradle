@@ -33,10 +33,11 @@ dependencies {
     compile 'com.google.firebase:firebase-core:11.0.4'
     compile 'com.google.android.gms:play-services-auth:11.0.4'
     compile 'com.android.support:design:26.+'
-    testCompile 'junit:junit:4.12'
     compile 'com.makeramen:roundedimageview:2.3.0'
     compile 'com.squareup.picasso:picasso:2.5.2'
+    testCompile 'junit:junit:4.12'
 }
+
 
 
 

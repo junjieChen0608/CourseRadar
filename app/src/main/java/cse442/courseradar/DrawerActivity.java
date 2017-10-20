@@ -42,7 +42,6 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageMetadata;
 import com.google.firebase.storage.StorageReference;
 import com.makeramen.roundedimageview.RoundedImageView;
 import com.squareup.picasso.Picasso;
@@ -52,7 +51,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Date;
 
 public class DrawerActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.OnConnectionFailedListener {
@@ -71,7 +69,7 @@ public class DrawerActivity extends AppCompatActivity
     protected RoundedImageView ivProfilePicture;
     private StorageReference firebaseStorage;
 
-    /* the flag that is used to determine if upload image is done before retrieve image from firebase */
+    /* boolean flag that is used to determine if upload image is done before retrieve image from firebase */
     private boolean setFromLocal;
 
     protected TextView tvUserName;
@@ -80,12 +78,10 @@ public class DrawerActivity extends AppCompatActivity
     private  File localImage;
     protected NavigationView navigationView;
     protected static GoogleApiClient googleApiClient;
-    /* the universal drawer that shared among sub-classes */
-    protected DrawerLayout drawer;
-    /* the activity that user is currently in, it is used to implement back button logic */
-    protected Activity currentActivity;
+    protected DrawerLayout drawer; // the universal drawer that shared among sub-classes
+    protected Activity currentActivity; // the activity that user is currently in, it is used to implement back button logic
     private ProgressDialog progressDialog;
-    private AlertDialog alertDialog;
+    private AlertDialog imageOptionDialog;
     private File cacheFilePath;
     private String userUBIT;
     private ProgressBar pbLoadAvatar;
@@ -104,6 +100,7 @@ public class DrawerActivity extends AppCompatActivity
         drawer.setDrawerListener(toggle);
         toggle.syncState();
 
+        // when drawer is sliding, hide soft keyboard
         drawer.setDrawerListener(new DrawerLayout.DrawerListener() {
             @Override
             public void onDrawerSlide(View drawerView, float slideOffset) {
@@ -126,8 +123,8 @@ public class DrawerActivity extends AppCompatActivity
         navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-        /*find the UI element in the drawer header and initialize them*/
-        View headerView = navigationView.getHeaderView(0);
+        /*drawer header UI element initialization*/
+        View headerView = navigationView.getHeaderView(0); // only has 1 header, so it is index 0
         tvUserName = (TextView) headerView.findViewById(R.id.tv_user_name);
         tvUserEmail = (TextView) headerView.findViewById(R.id.tv_user_email);
         ivProfilePicture = (RoundedImageView) headerView.findViewById(R.id.iv_user_profile_photo);
@@ -137,9 +134,11 @@ public class DrawerActivity extends AppCompatActivity
                 /* check if user is sign in/out to enable/disable alertdialog */
                 if(FirebaseAuth.getInstance().getCurrentUser() != null){
                     if(ActivityCompat.checkSelfPermission(DrawerActivity.this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED){
-                        alertDialog.show();
+                        // storage permission is granted, show the option dialog
+                        imageOptionDialog.show();
                     }
                     else {
+                        // request storage permission from user
                         verifyStoragePermissions(DrawerActivity.this);
                     }
                 }
@@ -154,6 +153,7 @@ public class DrawerActivity extends AppCompatActivity
         StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
         StrictMode.setVmPolicy(builder.build());
 
+        /* initialize Google API Client */
         if(googleApiClient != null){
             Log.wtf(TAG, "google api client is created and connected ? " + googleApiClient.isConnected());
         }else{
@@ -171,8 +171,9 @@ public class DrawerActivity extends AppCompatActivity
 
         setFromLocal = false;
 
-        alertDialog = new AlertDialog.Builder(DrawerActivity.this)
-                .setTitle("Select")
+        /* build image option dialog */
+        imageOptionDialog = new AlertDialog.Builder(DrawerActivity.this)
+                .setTitle("Select image from")
                 .setItems(new String[]{"Camera", "Album"}, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
@@ -196,7 +197,7 @@ public class DrawerActivity extends AppCompatActivity
         switch (id){
             case R.id.nav_sign_in:
                 Intent signInIntent = new Intent(currentActivity, LandingActivity.class).setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-                /* the extra information is used to notify the LandingActivity from which activity does this intent is made */
+                /* the extra information is used to notify the LandingActivity from which activity does this intent is sent */
                 signInIntent.putExtra("source", currentActivity.getClass().getSimpleName());
                 startActivity(signInIntent);
                 break;
@@ -204,7 +205,6 @@ public class DrawerActivity extends AppCompatActivity
                 signOut();
                 break;
         }
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
@@ -214,7 +214,6 @@ public class DrawerActivity extends AppCompatActivity
     @Override
     public void onBackPressed() {
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             Log.d(TAG, "close window");
             drawer.closeDrawer(GravityCompat.START);
@@ -228,24 +227,24 @@ public class DrawerActivity extends AppCompatActivity
                 startMain.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 startActivity(startMain);
             }else{
-                Log.d(TAG, "go back to previous activity on the stack");
+                Log.d(TAG, "go back to previous activity on the history stack");
                 super.onBackPressed();
             }
         }
     }
 
-    /* invoke sign out procedure, this signs out current user from firebaseAuth and GoogleSignInAPI
-      *  it is also called if a non-UB email tried to sign in
-      * */
+    /*
+        invoke sign out procedure, this signs out current user from firebaseAuth and GoogleSignInAPI
+        it is also called if a non-UB email tried to sign in
+     */
     protected void signOut(){
         showProgressDialog();
         FirebaseAuth.getInstance().signOut();
         if(googleApiClient != null){
-            /*
-            must check if google API client is connected to successfully sign user out
-            */
+            /* must check if google API client is connected to successfully sign user out */
             googleApiClient.connect();
             googleApiClient.registerConnectionCallbacks(new GoogleApiClient.ConnectionCallbacks() {
+
                 @Override
                 public void onConnected(@Nullable Bundle bundle) {
                     Auth.GoogleSignInApi.signOut(googleApiClient).setResultCallback(new ResultCallback<Status>() {
@@ -266,7 +265,7 @@ public class DrawerActivity extends AppCompatActivity
         hideProgressDialog();
     }
 
-    /* update drawer UI element according to user's sign up status */
+    /* update drawer header UI element according to user's sign up status */
     protected void updateDrawerUI(FirebaseUser user){
         Log.d(TAG, "updating UI...");
 
@@ -278,7 +277,7 @@ public class DrawerActivity extends AppCompatActivity
             tvUserName.setText(parseUBIT(user.getEmail()));
             tvUserEmail.setText(user.getEmail());
             userUBIT = parseUBIT(FirebaseAuth.getInstance().getCurrentUser().getEmail());
-            /* check if image is exsited in local repo */
+            /* check if image is exsited in local file system */
 //            localImage = new File(cacheFilePath, userUBIT + ".jpeg");
 //            if(localImage.exists() &&
 //                ActivityCompat.checkSelfPermission(DrawerActivity.this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED){
@@ -350,6 +349,7 @@ public class DrawerActivity extends AppCompatActivity
         return account != null && account.getEmail().contains("@buffalo.edu");
     }
 
+    /* parse user's UBIT from UB email */
     protected String parseUBIT(String email){
         return email.substring(0, email.indexOf("@"));
     }
@@ -360,7 +360,7 @@ public class DrawerActivity extends AppCompatActivity
         Toast.makeText(this, "Google Play Services error.", Toast.LENGTH_SHORT).show();
     }
 
-    /* invoke camera by seclecting alertdialog poped up from pressing the avatar */
+    /* launch camera */
     protected void selectCamera() {
         createImageFile();
         if (!imageFile.exists()) {
@@ -371,7 +371,7 @@ public class DrawerActivity extends AppCompatActivity
         startActivityForResult(cameraIntent, REQUEST_CAMERA);
     }
 
-    /* invoke album by slecting alertdialog poped up from pressing the avatar */
+    /* launch album */
     protected void selectAlbum() {
         Intent albumIntent = new Intent(Intent.ACTION_PICK);
         albumIntent.setDataAndType(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, "image/*");
@@ -401,16 +401,9 @@ public class DrawerActivity extends AppCompatActivity
         }
     }
 
-    /* verify if we have storage permission from user cellphone and prompt the user if we do not have it */
+    /* request permission from user */
     public static void verifyStoragePermissions(Activity activity) {
-        // Check if we have storage permission
-        int permission = ActivityCompat.checkSelfPermission(activity, android.Manifest.permission.WRITE_EXTERNAL_STORAGE);
-        // We don't have permission so prompt the user
-        ActivityCompat.requestPermissions(
-                activity,
-                PERMISSIONS_STORAGE,
-                REQUEST_EXTERNAL_STORAGE
-        );
+        ActivityCompat.requestPermissions(activity, PERMISSIONS_STORAGE, REQUEST_EXTERNAL_STORAGE);
     }
 
     /* handle the storage permission request by toast message to user when permission is granted or denied */
@@ -418,19 +411,18 @@ public class DrawerActivity extends AppCompatActivity
     public void onRequestPermissionsResult(int requestCode,String permissions[], int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         switch (requestCode) {
-            case REQUEST_EXTERNAL_STORAGE: {
+            case REQUEST_EXTERNAL_STORAGE:
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     Toast.makeText(this,
-                            "Permission is granted, avatar is enable",
+                            "Permission granted, avatar functionality now available",
                             Toast.LENGTH_SHORT).show();
-                    alertDialog.show();
+                    imageOptionDialog.show();
                 } else {
                     Toast.makeText(this,
-                            "Permission is denied, avatar is disable",
+                            "Permission denied, avatar functionality not available",
                             Toast.LENGTH_SHORT).show();
                 }
-                return;
-            }
+            break;
         }
     }
 

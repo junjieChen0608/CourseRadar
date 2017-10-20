@@ -49,12 +49,11 @@ public class LandingActivity extends DrawerActivity implements View.OnClickListe
     private static final int RC_SIGN_IN = 9001;
     private static final String USER_DATABASE = "UserDatabase";
 
-
     private Button btnSignInWithMyUB;
     private TextView tvAsGuest;
 
-    /* from which activity does LandingActivity start */
-    private String sourceActivity;
+    private String sourceActivity; // from which activity does LandingActivity start
+    private Bundle bundle;
 
     private FirebaseAuth firebaseAuth;
     private FirebaseUser firebaseUser;
@@ -72,15 +71,17 @@ public class LandingActivity extends DrawerActivity implements View.OnClickListe
         tvAsGuest = (TextView) findViewById(R.id.tv_as_guest);
         tvAsGuest.setOnClickListener(this);
 
-        /* Get Extra from Bundle to check where the user starts this activity */
-        Intent intentComeFrom = getIntent();
-        Bundle bundle = intentComeFrom.getExtras();
+        /* Get Extra from source intent to check where the user starts this activity */
+        Intent sourceIntent = getIntent();
+        bundle = sourceIntent.getExtras();
         if(bundle != null){
+            // if bundle is not null, it means the user comes from other activity
             sourceActivity = (String)bundle.get("source");
-            Log.d(TAG, "come from other activity " + sourceActivity);
+            Log.d("landing", "come from other activity " + sourceActivity);
         }else{
+            // if the bundle is null, means user just started the app
             sourceActivity = TAG;
-            Log.d(TAG, "just landed: " + sourceActivity);
+            Log.d("landing", "just landed: " + sourceActivity);
         }
 
         firebaseAuth = FirebaseAuth.getInstance();
@@ -91,6 +92,7 @@ public class LandingActivity extends DrawerActivity implements View.OnClickListe
     @Override
     protected void onStart() {
         Log.d(TAG, "onStart");
+        // mark this activity itself as current activity
         currentActivity = this;
         if(sourceActivity == null){
             sourceActivity = TAG;
@@ -98,14 +100,13 @@ public class LandingActivity extends DrawerActivity implements View.OnClickListe
 
         /* Check if user is signed in (non-null) and redirect activity accordingly. */
         firebaseUser = firebaseAuth.getCurrentUser();
+        super.onStart();
         if(firebaseUser != null){
             Log.d(TAG, "user is signed in, redirect to MainActivity");
-            super.onStart();
             startActivity(new Intent(this, MainActivity.class).setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP));
             finish();
         }else{
             Log.d(TAG, "user is not signed in");
-            super.onStart();
         }
     }
 
@@ -164,15 +165,25 @@ public class LandingActivity extends DrawerActivity implements View.OnClickListe
                                 * after database check, the behavior is as follows:
                                 *
                                 * 1, update the side nav drawer to signed status
-                                *
-                                * 2.1 if user come from LandingActivity and signed in, redirect to MainActivity
-                                * 2.2 else user come from other activity, just finish this activity
-                                *
                                 * */
 
-                                if(sourceActivity != null && sourceActivity.equals(TAG)){
-                                    startActivity(new Intent(LandingActivity.this, MainActivity.class).setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT));
+                                if(sourceActivity != null){
+                                    if(sourceActivity.equals(TAG)){
+                                        // 2.1 if user come from LandingActivity and signed in, redirect to MainActivity
+                                        startActivity(new Intent(LandingActivity.this, MainActivity.class).setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT));
+                                    }else if(sourceActivity.equals("DetailedViewActivity")){
+                                        /*
+                                            2.2 else if user come from DetailedViewActivity, put the instructor's name and course ID
+                                            to the intent, then start a new RatingActivity
+                                         */
+                                        Intent ratingIntent = new Intent(LandingActivity.this, RatingActivity.class);
+                                        ratingIntent.putExtra("instructorName", bundle.getString("instructorName"));
+                                        ratingIntent.putExtra("courseID", bundle.getString("courseID"));
+                                        startActivity(ratingIntent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP));
+                                    }
                                 }
+                                Log.d(TAG, "Successfully logged in");
+                                // 2.3 always finish this activity
                                 finish();
                             }
                         }else{
@@ -200,26 +211,23 @@ public class LandingActivity extends DrawerActivity implements View.OnClickListe
             }
 
             @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
+            public void onCancelled(DatabaseError databaseError) { }
         });
     }
 
     @Override
     public void onClick(View v) {
-        /*
-        * check the sourceActivity flag to determine whether redirect to MainActivity or just call finish()
-        * */
         if(v == btnSignInWithMyUB){
             signIn();
         }else if(v == tvAsGuest){
-            /* if this user come from other activity and clicked proceed as guest, just finish this activity without redirecting */
             Log.d(TAG, "sourceActivity: " + sourceActivity);
             if (sourceActivity.equals(TAG)){
-                startActivity(new Intent(this, MainActivity.class).setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT));
+                /* if this user just launched app, click "Proceed as guest" will redirect to MainActivity */
+                startActivity(new Intent(this, MainActivity.class).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP));
             }
+            /* if this user come from other activity and clicked proceed as guest, just finish this activity without redirecting */
             finish();
+            Log.d(TAG, "LandingActivity is finished");
         }
     }
 }

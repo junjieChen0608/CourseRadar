@@ -7,15 +7,29 @@ import java.util.HashMap;
  */
 
 public class ReviewInfo {
+
     private String name;
     private HashMap<String, Object> reviewDetail;
 
+    /**
+     * Four piece of information were stored in each reviewDetail:
+     * comment (String)
+     * assignmentDifficult (Long)
+     * lectureQuality (Long)
+     * overallQuality (Long)
+     * @param name revierwer's name, used for development purpose only
+     * @param reviewDetail as described above
+     */
     public ReviewInfo(String name, HashMap<String, Object> reviewDetail) {
         this.name = name;
         this.reviewDetail = reviewDetail;
     }
 
-    // TODO:: change get review, and add other getters
+    /**
+     * This is ony used for debugging for self development
+     * because all reviews remain anonymous, we don't show reviewer's name
+     * @return student's name in this review
+     */
     public String getName() {
         return name;
     }

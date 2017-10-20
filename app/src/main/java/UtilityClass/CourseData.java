@@ -6,13 +6,13 @@ import java.util.HashMap;
  * Created by junjie on 9/12/17.
  */
 
-public class courseData {
+public class CourseData {
     private String credit;
     private HashMap<String, String> instructor;
 
-    public courseData(){};
+    public CourseData(){};
 
-    public courseData(String credit, HashMap<String, String> instructor){
+    public CourseData(String credit, HashMap<String, String> instructor){
         this.credit = credit;
         this.instructor = instructor;
     }
