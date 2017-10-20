@@ -18,6 +18,7 @@ import cse442.courseradar.R;
 
 /**
  * Created by yang on 10/5/17.
+ * the adapter to populate the ListView in DetailedViewActivity
  */
 
 public class ReviewInfoAdapter extends ArrayAdapter<ReviewInfo> {

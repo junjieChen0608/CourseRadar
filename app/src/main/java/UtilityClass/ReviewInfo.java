@@ -1,12 +1,17 @@
 package UtilityClass;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import java.util.HashMap;
 
 /**
  * Created by yang on 10/5/17.
+ * custom data type to represent each user's review on certain instructor
+ * it is fetched from "ratings" database
  */
 
-public class ReviewInfo {
+public class ReviewInfo implements Parcelable{
 
     private String name;
     private HashMap<String, Object> reviewDetail;
@@ -24,6 +29,22 @@ public class ReviewInfo {
         this.name = name;
         this.reviewDetail = reviewDetail;
     }
+
+    protected ReviewInfo(Parcel in) {
+        name = in.readString();
+    }
+
+    public static final Creator<ReviewInfo> CREATOR = new Creator<ReviewInfo>() {
+        @Override
+        public ReviewInfo createFromParcel(Parcel in) {
+            return new ReviewInfo(in);
+        }
+
+        @Override
+        public ReviewInfo[] newArray(int size) {
+            return new ReviewInfo[size];
+        }
+    };
 
     /**
      * This is ony used for debugging for self development
@@ -51,6 +72,13 @@ public class ReviewInfo {
     }
 
 
+    @Override
+    public int describeContents() {
+        return 0;
+    }
 
-
+    @Override
+    public void writeToParcel(Parcel parcel, int i) {
+        parcel.writeString(name);
+    }
 }

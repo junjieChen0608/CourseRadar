@@ -36,6 +36,8 @@ public class DetailedViewActivity extends AppCompatActivity {
     private static final String TAG = DetailedViewActivity.class.getSimpleName();
     private static final String INSTRUCTORS = "instructors";
     private static final String RATINGS = "ratings";
+    private static final String RETURNED_DATA = "new rating";
+    private static final int RATING_REQUEST = 99, RESULT_NO_NEW_RATING = 100, RESULT_NEW_RATING = 200;
 
     private DatabaseReference instructorDB;
     private DatabaseReference ratingsDB;
@@ -124,10 +126,25 @@ public class DetailedViewActivity extends AppCompatActivity {
                     Intent ratingIntent = new Intent(DetailedViewActivity.this, RatingActivity.class);
                     ratingIntent.putExtra("instructorName", currentInstructor);
                     ratingIntent.putExtra("courseID", currentCourseID);
-                    startActivity(ratingIntent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP));
+                    startActivityForResult(ratingIntent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP), RATING_REQUEST);
                 }
             }
         });
+    }
+
+    /*
+        handles returned result from RatingActivity,
+        it could be no new review or a new review is made
+     */
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if(requestCode == RATING_REQUEST && resultCode == RESULT_NEW_RATING){
+            ReviewInfo returnResult = (ReviewInfo) data.getExtras().get(RETURNED_DATA);
+            Log.d("result", returnResult.getName());
+        }else if(resultCode == RESULT_NO_NEW_RATING){
+            Log.d("result", "pressed back in RatingActivity");
+        }
     }
 
     /**

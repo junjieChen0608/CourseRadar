@@ -4,6 +4,9 @@ import java.util.HashMap;
 
 /**
  * Created by junjie on 9/12/17.
+ * custom data type to represent each course's basic information
+ * i.e. credit, list of instructor
+ * this data is fetched from "courses" database
  */
 
 public class CourseData {

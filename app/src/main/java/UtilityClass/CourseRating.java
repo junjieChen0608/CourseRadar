@@ -4,6 +4,7 @@ import java.util.HashMap;
 
 /**
  * Created by wiiSo on 9/30/2017.
+ * represent user's rating on certain instructor,
  */
 
 public class CourseRating {

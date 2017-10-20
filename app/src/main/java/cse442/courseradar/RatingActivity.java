@@ -1,5 +1,7 @@
 package cse442.courseradar;
 
+import android.content.Intent;
+import android.os.Parcelable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -20,12 +22,15 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.HashMap;
 
 import UtilityClass.CourseRating;
+import UtilityClass.ReviewInfo;
 
 public class RatingActivity extends AppCompatActivity {
 
     private static final String TAG = RatingActivity.class.getSimpleName();
     private static final String RATINGS = "ratings";
     private static final String INSTRUCTORS = "instructors";
+    private static final String RETURN_DATA = "new rating";
+    private static final int RESULT_NO_NEW_RATING = 100, RESULT_NEW_RATING = 200;
 
     private EditText etComment;
     private TextView tvInstructorName, tvCourseID;
@@ -34,10 +39,18 @@ public class RatingActivity extends AppCompatActivity {
     private DatabaseReference instructorDB, ratingDB;
     private String userUBIT, instructorName, courseID, comment;
     private int overallQuality, lectureQuality, assignmentDiff;
+    private ReviewInfo reviewToUpdate;
 
     /*rating database related strings*/
     private int userOverallQuality, userLectureQuality, userAssignmentDiff,
                 instructorOverallQuality, instructorLectureQuality, instructorAssignmentDiff, instructorTotalRatings;
+
+    @Override
+    public void onBackPressed() {
+        // indicate no new review is made
+        setResult(RESULT_NO_NEW_RATING);
+        super.onBackPressed();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -102,6 +115,8 @@ public class RatingActivity extends AppCompatActivity {
             HashMap<String, Object> newComment = new HashMap<>();
             newComment.put("comment", comment);
             ratingDB.child(userUBIT).child(instructorName+"-"+courseID).updateChildren(newComment);
+            // instantiate a new ReviewInfo object to return back to DetailViewActivity
+            reviewToUpdate = new ReviewInfo(userUBIT, newRating);
             Log.d("setter", "setter called at " + whichDB);
         }else{
             // update instructor's rating database
@@ -135,6 +150,15 @@ public class RatingActivity extends AppCompatActivity {
         Log.d("setter", "setter called at " + INSTRUCTORS);
         Toast.makeText(RatingActivity.this, "Your rating is submitted!!", Toast.LENGTH_SHORT).show();
         Log.d(TAG, "closing activity");
+        /*
+            set result code to indicate new review is made,
+            then send this piece of new review back to DetailedViewActivity
+          */
+        Intent resultIntent = new Intent();
+        Bundle dataBundle = new Bundle();
+        dataBundle.putParcelable(RETURN_DATA, reviewToUpdate);
+        resultIntent.putExtras(dataBundle);
+        setResult(RESULT_NEW_RATING, resultIntent);
         finish();
 
     }
