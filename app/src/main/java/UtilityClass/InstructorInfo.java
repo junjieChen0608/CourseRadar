@@ -4,8 +4,6 @@ import java.util.HashMap;
 
 /**
  * Created by yang on 10/2/17.
- * custom data type to represent ListView item in the MainActivity
- * it contains this instructor's name, email, average rating based on number of reviews
  */
 
 public class InstructorInfo {

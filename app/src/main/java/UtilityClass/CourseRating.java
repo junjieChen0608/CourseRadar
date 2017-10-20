@@ -4,15 +4,14 @@ import java.util.HashMap;
 
 /**
  * Created by wiiSo on 9/30/2017.
- * represent user's rating on certain instructor,
  */
 
 public class CourseRating {
-    public long assignmentDifficulty, lectureQuality, overallQuality, totalRatings;
+    public int assignmentDifficulty, lectureQuality, overallQuality, totalRatings;
 
     public CourseRating(){}
 
-    public CourseRating(long assignmentDifficulty, long lectureQuality, long overallQuality, long totalRatings){
+    public CourseRating(int assignmentDifficulty, int lectureQuality, int overallQuality, int totalRatings){
         this.assignmentDifficulty = assignmentDifficulty;
         this.lectureQuality = lectureQuality;
         this.overallQuality = overallQuality;

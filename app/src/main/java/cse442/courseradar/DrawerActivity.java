@@ -389,7 +389,7 @@ public class DrawerActivity extends AppCompatActivity
         startActivityForResult(intent, REQUEST_CROP);
     }
 
-    /* create a image file with jpeg format and name the file by user UBIT
+    /* create a image file with png format and name the file by user UBIT
      * therefore, it will overwrite the image with the newest one and save user storage */
     protected void createImageFile() {
         imageFile = new File(cacheFilePath, userUBIT + ".jpeg");

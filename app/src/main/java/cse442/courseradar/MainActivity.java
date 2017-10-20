@@ -50,7 +50,7 @@ public class MainActivity extends DrawerActivity implements SearchView.OnQueryTe
 
     private TextView instructorReview;
 
-    private String lastTimeUsedModifiedCourseID;
+    private String checkedCourseID;
 
     private int countInstructors;
     private int countReviews;
@@ -91,6 +91,9 @@ public class MainActivity extends DrawerActivity implements SearchView.OnQueryTe
             Log.wtf(TAG + " onStart", "user is signed out");
         }
         updateDrawerUI(FirebaseAuth.getInstance().getCurrentUser());
+        if(checkedCourseID != null){
+            onQueryTextSubmit(checkedCourseID);
+        }
     }
 
     @Override
@@ -103,6 +106,7 @@ public class MainActivity extends DrawerActivity implements SearchView.OnQueryTe
         if(input != null && !input.isEmpty() && input.matches("\\w+")){
             input = input.toUpperCase();
             final String capitalizedCourseID = input;
+            checkedCourseID = capitalizedCourseID;
 
             /* lookup course databse for this course */
             courseDB.child(input).addListenerForSingleValueEvent(new ValueEventListener() {

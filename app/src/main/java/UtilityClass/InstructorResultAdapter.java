@@ -18,7 +18,6 @@ import cse442.courseradar.R;
 
 /**
  * Created by yang on 10/2/17.
- * the adapter to populate the ListView in MainActivity(i.e. search course ID result overview)
  */
 
 public class InstructorResultAdapter extends ArrayAdapter<InstructorInfo> {

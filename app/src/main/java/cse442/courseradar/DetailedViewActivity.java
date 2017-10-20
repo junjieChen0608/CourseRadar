@@ -36,23 +36,16 @@ public class DetailedViewActivity extends AppCompatActivity {
     private static final String TAG = DetailedViewActivity.class.getSimpleName();
     private static final String INSTRUCTORS = "instructors";
     private static final String RATINGS = "ratings";
-    private static final String RETURNED_DATA = "new rating";
-    private static final int RATING_REQUEST = 99, RESULT_NO_NEW_RATING = 100, RESULT_NEW_RATING = 200;
 
     private DatabaseReference instructorDB;
     private DatabaseReference ratingsDB;
-    private String userUBIT;
 
     private TextView tvInstructorName, tvCourseID, tvOverallQuality, tvLectureQuality, tvAssignmentDifficulty;
     private ImageView ivInstructorPhoto;
     private AlertDialog signInAlertDialog;
     private Button btnClickToRate;
     private ProgressBar pbReviewListWait;
-
     private ListView lvReviewsList;
-    private ReviewInfoAdapter reviewInfoAdapter;
-    private ArrayList<ReviewInfo> currentReviewInfos;
-
     private String currentInstructor, currentCourseID, currentInstructorEmail;
     private int countInstructors, countReviews;
 
@@ -84,7 +77,6 @@ public class DetailedViewActivity extends AppCompatActivity {
             currentInstructor = extra.getString("currentInstructor");
             currentCourseID = extra.getString("currentCourseID");
             currentInstructorEmail = extra.getString("currentInstructorEmail");
-            showInstructorInfo(currentInstructor, currentCourseID);
         }
 
         /*
@@ -131,52 +123,18 @@ public class DetailedViewActivity extends AppCompatActivity {
                     Intent ratingIntent = new Intent(DetailedViewActivity.this, RatingActivity.class);
                     ratingIntent.putExtra("instructorName", currentInstructor);
                     ratingIntent.putExtra("courseID", currentCourseID);
-                    startActivityForResult(ratingIntent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP), RATING_REQUEST);
+                    startActivity(ratingIntent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP));
                 }
             }
         });
     }
 
-    /*
-        handles returned result from RatingActivity,
-        it could be no new review or a new review is made
-     */
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if(requestCode == RATING_REQUEST && resultCode == RESULT_NEW_RATING){
-            ReviewInfo returnResult = (ReviewInfo) data.getExtras().getParcelable(RETURNED_DATA);
-            Log.d("result", returnResult.getName());
-            Log.d("result", "in details overall quality " + returnResult.getOverallQuality().toString());
-            updateReviewList(returnResult);
-        }else if(resultCode == RESULT_NO_NEW_RATING){
-            Log.d("result", "pressed back in RatingActivity");
-        }
+    protected void onStart() {
+        super.onStart();
+        showInstructorInfo(currentInstructor, currentCourseID);
     }
 
-    private void updateReviewList(ReviewInfo reviewInfo) {
-
-        String userUBIT = parseUBIT(FirebaseAuth.getInstance().getCurrentUser().getEmail());
-        int counter = 0;
-        while (counter < currentReviewInfos.size()) {
-            if (currentReviewInfos.get(counter).getName().equals(userUBIT)) {
-                break;
-            }
-            counter += 1;
-        }
-        currentReviewInfos.set(counter, reviewInfo);
-
-        reviewInfo.getOverallQuality();
-
-        reviewInfoAdapter.notifyDataSetChanged();
-
-//        if (counter == currentReviewInfos.size()) {
-//            currentReviewInfos.add(reviewInfo);
-//        } else {
-//            currentReviewInfos.set(counter)
-//        }
-
-    }
     /**
      *
      * Display detailed view for the specific instructor's course,
@@ -195,10 +153,10 @@ public class DetailedViewActivity extends AppCompatActivity {
                 if (courseRating != null) {
 
                     HashMap<String, Object> hashMap = courseRating.toMap();
-                    long totalRatings = (long) hashMap.get("totalRatings");
-                    double overallQuality = calculateAvgScore((long) hashMap.get("overallQuality"), totalRatings);
-                    double lectureQuality = calculateAvgScore((long) hashMap.get("lectureQuality"), totalRatings);
-                    double assignmentDifficulty = calculateAvgScore((long) hashMap.get("assignmentDifficulty"), totalRatings);
+                    int totalRatings = (int) hashMap.get("totalRatings");
+                    double overallQuality = calculateAvgScore((int) hashMap.get("overallQuality"), totalRatings);
+                    double lectureQuality = calculateAvgScore((int) hashMap.get("lectureQuality"), totalRatings);
+                    double assignmentDifficulty = calculateAvgScore((int) hashMap.get("assignmentDifficulty"), totalRatings);
 
                     /*update UI element in detailed view */
                     tvInstructorName.setText(instructorName);
@@ -233,7 +191,7 @@ public class DetailedViewActivity extends AppCompatActivity {
     }
 
     /*calculate average score*/
-    private double calculateAvgScore(long totalScore, long numOfScores){
+    private double calculateAvgScore(int totalScore, int numOfScores){
         double ret = (numOfScores == 0) ? 0.0 : (totalScore * 1.0)/ numOfScores;
         ret = Double.parseDouble(String.format("%.1f", ret));
         return ret;
@@ -262,7 +220,7 @@ public class DetailedViewActivity extends AppCompatActivity {
 
                 if (numReviews == 0) {
                     // no ratings and reviews
-                    reviewInfoAdapter = new ReviewInfoAdapter(DetailedViewActivity.this, reviewInfos);
+                    ReviewInfoAdapter reviewInfoAdapter = new ReviewInfoAdapter(DetailedViewActivity.this, reviewInfos);
                     lvReviewsList.setAdapter(reviewInfoAdapter);
                     reviewListReady();
                 } else {
@@ -292,13 +250,7 @@ public class DetailedViewActivity extends AppCompatActivity {
                                     a workaround of asynchronous firebase callback
                                  */
                                 if (numReviews == countReviews) {
-                                    /*
-                                    when we have all reviews, it's time to show the reviews to user.
-                                    also we store the local final variable reviewsInfos to instance variable currentReviewsInfos
-                                    so that later we could easily update it
-                                    */
-                                    currentReviewInfos = reviewInfos;
-                                    reviewInfoAdapter = new ReviewInfoAdapter(DetailedViewActivity.this, reviewInfos);
+                                    ReviewInfoAdapter reviewInfoAdapter = new ReviewInfoAdapter(DetailedViewActivity.this, reviewInfos);
                                     lvReviewsList.setAdapter(reviewInfoAdapter);
                                     reviewListReady();
                                 }
