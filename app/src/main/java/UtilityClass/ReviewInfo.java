@@ -32,6 +32,7 @@ public class ReviewInfo implements Parcelable{
 
     protected ReviewInfo(Parcel in) {
         name = in.readString();
+        reviewDetail = in.readHashMap(ClassLoader.getSystemClassLoader());
     }
 
     public static final Creator<ReviewInfo> CREATOR = new Creator<ReviewInfo>() {
@@ -80,5 +81,6 @@ public class ReviewInfo implements Parcelable{
     @Override
     public void writeToParcel(Parcel parcel, int i) {
         parcel.writeString(name);
+        parcel.writeMap(reviewDetail);
     }
 }

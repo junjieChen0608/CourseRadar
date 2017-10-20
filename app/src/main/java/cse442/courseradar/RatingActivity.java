@@ -38,11 +38,11 @@ public class RatingActivity extends AppCompatActivity {
     private Button btnSubmit;
     private DatabaseReference instructorDB, ratingDB;
     private String userUBIT, instructorName, courseID, comment;
-    private int overallQuality, lectureQuality, assignmentDiff;
+    private long overallQuality, lectureQuality, assignmentDiff;
     private ReviewInfo reviewToUpdate;
 
     /*rating database related strings*/
-    private int userOverallQuality, userLectureQuality, userAssignmentDiff,
+    private long userOverallQuality, userLectureQuality, userAssignmentDiff,
                 instructorOverallQuality, instructorLectureQuality, instructorAssignmentDiff, instructorTotalRatings;
 
     @Override
@@ -130,7 +130,7 @@ public class RatingActivity extends AppCompatActivity {
             }else{
                 /*this user has previous rating
                 * need to calculate the rating difference to update the instructor's rating database*/
-                instructorOverallQuality = instructorOverallQuality - userOverallQuality + overallQuality;
+                instructorOverallQuality = (int) (instructorOverallQuality - userOverallQuality + overallQuality);
                 instructorAssignmentDiff = instructorAssignmentDiff - userAssignmentDiff + assignmentDiff;
                 instructorLectureQuality = instructorLectureQuality - userLectureQuality + lectureQuality;
             }
@@ -157,6 +157,7 @@ public class RatingActivity extends AppCompatActivity {
         Intent resultIntent = new Intent();
         Bundle dataBundle = new Bundle();
         dataBundle.putParcelable(RETURN_DATA, reviewToUpdate);
+        Log.d("result", "in rating overall rating " + reviewToUpdate.getOverallQuality());
         resultIntent.putExtras(dataBundle);
         setResult(RESULT_NEW_RATING, resultIntent);
         finish();
