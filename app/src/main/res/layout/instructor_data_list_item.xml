@@ -7,6 +7,8 @@
     android:layout_height="match_parent">
 
     <RelativeLayout
+        android:layout_margin="16dp"
+
         android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
@@ -21,31 +23,25 @@
 
 
             <TextView
-                android:paddingLeft="20dp"
                 android:textStyle="bold"
                 android:textSize="17sp"
                 android:id="@+id/tv_name"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
                 tools:text="name"
-                android:layout_marginLeft="8dp"
-                android:layout_marginStart="8dp" />
+                />
 
 
             <TextView
-                android:paddingLeft="20dp"
-                android:id="@+id/tv_email"
-                android:layout_width="324dp"
-                android:layout_height="wrap_content"
-                tools:text="email"
                 android:layout_marginTop="8dp"
                 android:layout_marginBottom="8dp"
-                android:layout_marginLeft="8dp"
-                android:layout_marginStart="8dp" />
+                android:id="@+id/tv_email"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                tools:text="email"
+                 />
 
             <LinearLayout
-                android:paddingLeft="28dp"
                 android:orientation="horizontal"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">

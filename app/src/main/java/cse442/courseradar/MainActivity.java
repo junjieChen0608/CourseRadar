@@ -40,20 +40,15 @@ public class MainActivity extends DrawerActivity implements SearchView.OnQueryTe
     private boolean noResult;
 
     /*search detail view elements*/
-    private ListView lvInstructorInfo;
-
     private static final String INSTRUCTORS = "instructors";
     private static final String COURSES= "courses";
     private static final String RATINGS = "ratings";
 
-    private DatabaseReference courseDB, instructorDB, ratingsDB;
-
-    private TextView instructorReview;
+    private DatabaseReference courseDB, instructorDB;
 
     private String checkedCourseID;
 
     private int countInstructors;
-    private int countReviews;
 
     private String currentInstructor, currentCourseID, currentInstructorEmail;
 
@@ -70,14 +65,12 @@ public class MainActivity extends DrawerActivity implements SearchView.OnQueryTe
         pbWait = (ProgressBar) findViewById(R.id.pb_wait);
 
         lvSearchResultList = (ListView) findViewById(R.id.lv_instructorData);
-        lvInstructorInfo = (ListView) findViewById(R.id.lv_instructor_info); // not used for now
 
         tvNoResult = (TextView) findViewById(R.id.tv_no_result);
         noResult = true;
 
         courseDB= FirebaseDatabase.getInstance().getReference(COURSES);
         instructorDB = FirebaseDatabase.getInstance().getReference(INSTRUCTORS);
-        ratingsDB = FirebaseDatabase.getInstance().getReference(RATINGS);
         unlockDrawer();
     }
 

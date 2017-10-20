@@ -47,7 +47,7 @@ public class DetailedViewActivity extends AppCompatActivity {
     private ProgressBar pbReviewListWait;
     private ListView lvReviewsList;
     private String currentInstructor, currentCourseID, currentInstructorEmail;
-    private int countInstructors, countReviews;
+    private int countReviews;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
