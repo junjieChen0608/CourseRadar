@@ -1,3 +1,18 @@
 <resources>
     <string name="app_name">CourseRadar</string>
+    <string name="sign_in_with_myub">Sign in with MyUB</string>
+    <string name="proceed_as_guest">Proceed as guest</string>
+    <string name="title_activity_drawer">DrawerActivity</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <string name="action_settings">Settings</string>
+    <string name="guest">Guest</string>
+    <string name="search_hint">Search courses</string>
+    <string name="no_result_found_for">No result found for</string>
+    <string name="overall_quality">Overall Quality:</string>
+    <string name="lecture_quality">Lecture Quality:</string>
+    <string name="assignment_difficulty">Assignment Difficulty:</string>
+    <string name="rate_me">Rate me!</string>
 </resources>
