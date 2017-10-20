@@ -21,7 +21,7 @@ A Google account that linked to Firebase.
 
 #### Become a collaborator
 To properly become a collaborator of our project and access to our Firebase backend, please send us your email that is correctly
-linked to Firebase to [czhang43@buffalo.edu](mailto://czhang43@buffalo.edu), we will evaluate and get back to you ASAP.
+linked to Firebase to [czhang43@buffalo.edu](mailto:czhang43@buffalo.edu), we will evaluate and get back to you ASAP.
 
 ### Get our project
 After you become a collaborator, you can load our project.
