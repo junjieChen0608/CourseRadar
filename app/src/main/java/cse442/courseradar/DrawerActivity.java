@@ -31,7 +31,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.auth.api.Auth;
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -85,6 +84,7 @@ public class DrawerActivity extends AppCompatActivity
     private File cacheFilePath;
     private String userUBIT;
     private ProgressBar pbLoadAvatar;
+    protected UBITValidation ubitValid = new UBITValidation();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -274,9 +274,9 @@ public class DrawerActivity extends AppCompatActivity
         }
         if(user != null){
             Log.d(TAG, "update UI as signed in status");
-            tvUserName.setText(parseUBIT(user.getEmail()));
+            tvUserName.setText(ubitValid.parseUBIT(user.getEmail()));
             tvUserEmail.setText(user.getEmail());
-            userUBIT = parseUBIT(FirebaseAuth.getInstance().getCurrentUser().getEmail());
+            userUBIT = ubitValid.parseUBIT(FirebaseAuth.getInstance().getCurrentUser().getEmail());
             /* check if image is exsited in local file system */
 //            localImage = new File(cacheFilePath, userUBIT + ".jpeg");
 //            if(localImage.exists() &&
@@ -342,16 +342,6 @@ public class DrawerActivity extends AppCompatActivity
         if (progressDialog != null && progressDialog.isShowing()) {
             progressDialog.dismiss();
         }
-    }
-
-    /* check if this account is UB email */
-    protected boolean isUBEmail(GoogleSignInAccount account){
-        return account != null && account.getEmail().contains("@buffalo.edu");
-    }
-
-    /* parse user's UBIT from UB email */
-    protected String parseUBIT(String email){
-        return email.substring(0, email.indexOf("@"));
     }
 
     @Override

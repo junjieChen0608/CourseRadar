@@ -58,6 +58,7 @@ public class LandingActivity extends DrawerActivity implements View.OnClickListe
     private FirebaseAuth firebaseAuth;
     private FirebaseUser firebaseUser;
     private DatabaseReference firebaseDB;
+    protected UBITValidation ubitValid = new UBITValidation();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -136,7 +137,7 @@ public class LandingActivity extends DrawerActivity implements View.OnClickListe
         if(result.isSuccess()){
             GoogleSignInAccount account = result.getSignInAccount();
             Log.wtf(TAG, "After sign in success, is Google API client connected ? " + googleApiClient.isConnected());
-            if(isUBEmail(account)){
+            if(ubitValid.isUBEmail(account)){
                 firebaseAuthWithGoogle(account);
             }else{
                 Toast.makeText(this, "Please use your UB email", Toast.LENGTH_SHORT).show();
@@ -197,7 +198,7 @@ public class LandingActivity extends DrawerActivity implements View.OnClickListe
 
     /* check if this user is in user database, if not just update it */
     private void checkUserDatabase(){
-        final String userUBIT = parseUBIT(firebaseUser.getEmail());
+        final String userUBIT = ubitValid.parseUBIT(firebaseUser.getEmail());
         firebaseDB.child(userUBIT).child("email").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
