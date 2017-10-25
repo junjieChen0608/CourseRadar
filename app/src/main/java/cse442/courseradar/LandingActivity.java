@@ -1,6 +1,5 @@
 package cse442.courseradar;
 
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -27,6 +26,8 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+
+import UtilityClass.UBITValidation;
 
 /*
 * The activity that greets our user, it allows user to sign in with UB email, or simply proceed as guest.
@@ -58,7 +59,6 @@ public class LandingActivity extends DrawerActivity implements View.OnClickListe
     private FirebaseAuth firebaseAuth;
     private FirebaseUser firebaseUser;
     private DatabaseReference firebaseDB;
-    protected UBITValidation ubitValid = new UBITValidation();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

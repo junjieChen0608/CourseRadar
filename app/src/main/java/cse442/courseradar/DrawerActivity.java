@@ -51,6 +51,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 
+import UtilityClass.UBITValidation;
+
 public class DrawerActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.OnConnectionFailedListener {
 
@@ -84,7 +86,7 @@ public class DrawerActivity extends AppCompatActivity
     private File cacheFilePath;
     private String userUBIT;
     private ProgressBar pbLoadAvatar;
-    protected UBITValidation ubitValid = new UBITValidation();
+    protected UBITValidation ubitValid;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -186,6 +188,7 @@ public class DrawerActivity extends AppCompatActivity
                 }).create();
         cacheFilePath = this.getExternalCacheDir();
         pbLoadAvatar = headerView.findViewById(R.id.pb_load_avatar);
+        ubitValid = new UBITValidation();
     }
 
     @SuppressWarnings("StatementWithEmptyBody")

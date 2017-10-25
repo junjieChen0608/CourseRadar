@@ -1,4 +1,4 @@
-package cse442.courseradar;
+package UtilityClass;
 
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 
