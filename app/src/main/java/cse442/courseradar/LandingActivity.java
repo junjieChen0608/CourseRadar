@@ -1,6 +1,5 @@
 package cse442.courseradar;
 
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -27,6 +26,8 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+
+import UtilityClass.UBITValidation;
 
 /*
 * The activity that greets our user, it allows user to sign in with UB email, or simply proceed as guest.
@@ -136,7 +137,7 @@ public class LandingActivity extends DrawerActivity implements View.OnClickListe
         if(result.isSuccess()){
             GoogleSignInAccount account = result.getSignInAccount();
             Log.wtf(TAG, "After sign in success, is Google API client connected ? " + googleApiClient.isConnected());
-            if(isUBEmail(account)){
+            if(ubitValid.isUBEmail(account)){
                 firebaseAuthWithGoogle(account);
             }else{
                 Toast.makeText(this, "Please use your UB email", Toast.LENGTH_SHORT).show();
@@ -197,7 +198,7 @@ public class LandingActivity extends DrawerActivity implements View.OnClickListe
 
     /* check if this user is in user database, if not just update it */
     private void checkUserDatabase(){
-        final String userUBIT = parseUBIT(firebaseUser.getEmail());
+        final String userUBIT = ubitValid.parseUBIT(firebaseUser.getEmail());
         firebaseDB.child(userUBIT).child("email").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
