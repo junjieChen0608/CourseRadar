@@ -450,20 +450,13 @@ public class DrawerActivity extends AppCompatActivity
                     e.printStackTrace();
                 }
                 /*compress the image*/
-                Bitmap compressedImg = BitmapFactory.decodeStream(imgStream);
-                ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-                compressedImg.compress(Bitmap.CompressFormat.JPEG, 20, byteArrayOutputStream);
-                try{
-                    byteArrayOutputStream.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                Bitmap originalImg = BitmapFactory.decodeStream(imgStream);
+                Bitmap compressedImg = Bitmap.createScaledBitmap(originalImg, (int)(originalImg.getWidth()*0.3), (int)(originalImg.getHeight()*0.3), true);
 
                 /* upload image uri to firebase storage and name the image file by user UBIT and save it in avatar folder */
                 StorageReference filepath = firebaseStorage.child("avatar/").child(userUBIT);
                 String newBitmapPath = MediaStore.Images.Media.insertImage(getContentResolver(), compressedImg, userUBIT, null);
                 filepath.putFile(Uri.parse(newBitmapPath));
-//                imageFile.renameTo(new File(cacheFilePath, userUBIT + ".jpeg"));
                 setFromLocal = true;
                 break;
         }

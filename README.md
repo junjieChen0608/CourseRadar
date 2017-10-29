@@ -3,6 +3,8 @@ This is a senior design software project from team Tit4Tat.
 Basically, it is an android application that 
 UB students can view and share course informations, professor evaluation, syllabus abstractions. 
 
+Check out our [super cool landing page](https://courseradar.firebaseapp.com/)
+
 ## Limitation
 Our project only gathered course scheduling data of lecture and seminar of 2017-2018 academic year. 
 
@@ -15,7 +17,7 @@ JDK version: 1.8 (Please follow the instruction on Internet to install and setup
 
 Android Studio version: [2.3.3](https://developer.android.com/studio/index.html). 
 
-Android SDK version: 21 (Android 5.0.0) to 26 (Android 8.0). 
+Android SDK version: 21 (Android 5.0.0) to 26 (Android 8.0)
 
 A Google account that linked to Firebase.
 
