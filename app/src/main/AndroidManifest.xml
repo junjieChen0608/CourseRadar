@@ -16,26 +16,23 @@
         android:theme="@style/AppTheme">
         <activity
             android:name=".LandingActivity"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar">
+            android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
         <activity
             android:name=".MainActivity"
             android:theme="@style/AppTheme.NoActionBar" />
-
         <activity
             android:name=".DrawerActivity"
             android:label="@string/title_activity_drawer"
             android:theme="@style/AppTheme.NoActionBar" />
-
         <activity android:name=".RatingActivity" />
-
-        <activity android:name=".DetailedViewActivity"></activity>
+        <activity android:name=".DetailedViewActivity" />
+        <activity android:name=".MyReviewsActivity" />
     </application>
 
 </manifest>

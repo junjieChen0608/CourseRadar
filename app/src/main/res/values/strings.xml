@@ -15,4 +15,8 @@
     <string name="lecture_quality">Lecture Quality:</string>
     <string name="assignment_difficulty">Assignment Difficulty:</string>
     <string name="rate_me">Rate me!</string>
+    <string name="db_overall_quality">overallQuality</string>
+    <string name="db_lecture_quality">lectureQuality</string>
+    <string name="db_assignment_diff">assignmentDifficulty</string>
+    <string name="db_comment">comment</string>
 </resources>

@@ -68,23 +68,27 @@ public class RatingActivity extends AppCompatActivity {
         btnSubmit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                instructorName = tvInstructorName.getText().toString();
-                courseID = tvCourseID.getText().toString();
                 comment = etComment.getText().toString();
+                if(comment.length() <= 1000){
+                    instructorName = tvInstructorName.getText().toString();
+                    courseID = tvCourseID.getText().toString();
 
-                overallQuality = (int) rbOverallQuality.getRating();
-                lectureQuality = (int) rbLectureQuality.getRating();
-                assignmentDiff = (int) rbAssignmentDiff.getRating();
+                    overallQuality = (int) rbOverallQuality.getRating();
+                    lectureQuality = (int) rbLectureQuality.getRating();
+                    assignmentDiff = (int) rbAssignmentDiff.getRating();
 
-                Log.d(TAG, "Instructor name: " + instructorName + "\n" +
+                    Log.d(TAG, "Instructor name: " + instructorName + "\n" +
                             "Course ID: " + courseID + "\n" +
                             "Overall: " + overallQuality + "\n" +
                             "Lecture: " + lectureQuality + "\n" +
                             "Assignment Difficulty: " + assignmentDiff + "\n" +
                             "Comment: " + comment);
-                /*fetch rating data from both user's and instructor's rating database*/
-                getRatingDatabase(RATINGS);
-                getRatingDatabase(INSTRUCTORS);
+                    /*fetch rating data from both user's and instructor's rating database*/
+                    getRatingDatabase(RATINGS);
+                    getRatingDatabase(INSTRUCTORS);
+                }else {
+                    Toast.makeText(RatingActivity.this, "Your comment cannot exceeds 1000 characters", Toast.LENGTH_SHORT).show();
+                }
             }
         });
     }

@@ -207,6 +207,10 @@ public class DrawerActivity extends AppCompatActivity
             case R.id.nav_sign_out:
                 signOut();
                 break;
+            case R.id.nav_my_reviews:
+                Log.d("nav item", "clicked my reviews");
+                startActivity(new Intent(this, MyReviewsActivity.class));
+                break;
         }
         drawer.closeDrawer(GravityCompat.START);
         return true;
