@@ -101,16 +101,16 @@ public class MyReviewsAdapter extends BaseExpandableListAdapter {
 
         // 0: overall, 1: lecture, 2: assignment, 3: comment
         TextView tvMyRevOverall = view.findViewById(R.id.tv_my_reviews_overall);
-        tvMyRevOverall.setText(this.ctx.getResources().getString(R.string.db_overall_quality) + ": " + specificRating.get(0));
+        tvMyRevOverall.setText(this.ctx.getResources().getString(R.string.overall_quality) + " " + specificRating.get(0));
 
         TextView tvMyRevLecture = view.findViewById(R.id.tv_my_reviews_lecture);
-        tvMyRevLecture.setText(this.ctx.getResources().getString(R.string.db_lecture_quality) + ": " + specificRating.get(1));
+        tvMyRevLecture.setText(this.ctx.getResources().getString(R.string.lecture_quality) + " " + specificRating.get(1));
 
         TextView tvMyRevAssignment = view.findViewById(R.id.tv_my_reviews_assignment_diff);
-        tvMyRevAssignment.setText(this.ctx.getResources().getString(R.string.db_assignment_diff) + ": " + specificRating.get(2));
+        tvMyRevAssignment.setText(this.ctx.getResources().getString(R.string.assignment_difficulty) + " " + specificRating.get(2));
 
         TextView tvMyRevComment = view.findViewById(R.id.tv_my_reviews_comment);
-        tvMyRevComment.setText(this.ctx.getResources().getString(R.string.db_comment) + ": " + specificRating.get(3));
+        tvMyRevComment.setText(this.ctx.getResources().getString(R.string.comment) + " " + specificRating.get(3));
 
         return view;
     }

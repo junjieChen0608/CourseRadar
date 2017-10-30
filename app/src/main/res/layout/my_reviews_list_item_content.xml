@@ -17,9 +17,9 @@
         tools:layout_constraintRight_creator="1"
         android:layout_marginTop="16dp"
         tools:layout_constraintLeft_creator="1"
-        app:layout_constraintLeft_toLeftOf="@+id/tv_my_reviews_lecture"
         app:layout_constraintTop_toTopOf="parent"
-        android:layout_marginLeft="0dp" />
+        android:layout_marginLeft="16dp"
+        app:layout_constraintLeft_toLeftOf="parent" />
 
     <TextView
         android:id="@+id/tv_my_reviews_lecture"
@@ -30,10 +30,10 @@
         tools:layout_constraintRight_creator="1"
         tools:layout_constraintBottom_creator="1"
         tools:layout_constraintLeft_creator="1"
-        app:layout_constraintLeft_toLeftOf="@+id/tv_my_reviews_assignment_diff"
-        android:layout_marginLeft="0dp"
         android:layout_marginTop="16dp"
-        app:layout_constraintTop_toBottomOf="@+id/tv_my_reviews_overall" />
+        app:layout_constraintTop_toBottomOf="@+id/tv_my_reviews_overall"
+        android:layout_marginLeft="0dp"
+        app:layout_constraintLeft_toLeftOf="@+id/tv_my_reviews_overall" />
 
     <TextView
         android:id="@+id/tv_my_reviews_assignment_diff"
@@ -43,10 +43,10 @@
         tools:layout_constraintRight_creator="1"
         tools:layout_constraintBottom_creator="1"
         tools:layout_constraintLeft_creator="1"
-        app:layout_constraintLeft_toLeftOf="@+id/tv_my_reviews_comment"
+        android:layout_marginTop="14dp"
+        app:layout_constraintTop_toBottomOf="@+id/tv_my_reviews_lecture"
         android:layout_marginLeft="0dp"
-        android:layout_marginTop="16dp"
-        app:layout_constraintTop_toBottomOf="@+id/tv_my_reviews_lecture" />
+        app:layout_constraintLeft_toLeftOf="@+id/tv_my_reviews_lecture" />
 
     <TextView
         android:id="@+id/tv_my_reviews_comment"
@@ -54,12 +54,11 @@
         android:layout_height="wrap_content"
         android:text="TextView"
         tools:layout_constraintBottom_creator="1"
-        android:layout_marginStart="8dp"
         tools:layout_constraintLeft_creator="1"
-        app:layout_constraintLeft_toLeftOf="parent"
-        android:layout_marginLeft="8dp"
         android:layout_marginTop="16dp"
         app:layout_constraintTop_toBottomOf="@+id/tv_my_reviews_assignment_diff"
         app:layout_constraintBottom_toBottomOf="parent"
-        android:layout_marginBottom="16dp" />
+        android:layout_marginBottom="16dp"
+        android:layout_marginLeft="0dp"
+        app:layout_constraintLeft_toLeftOf="@+id/tv_my_reviews_assignment_diff" />
 </android.support.constraint.ConstraintLayout>
