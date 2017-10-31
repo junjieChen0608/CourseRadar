@@ -48,6 +48,7 @@ import com.squareup.picasso.Picasso;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -284,29 +285,24 @@ public class DrawerActivity extends AppCompatActivity
             tvUserName.setText(ubitValid.parseUBIT(user.getEmail()));
             tvUserEmail.setText(user.getEmail());
             userUBIT = ubitValid.parseUBIT(FirebaseAuth.getInstance().getCurrentUser().getEmail());
-            /* check if image is exsited in local file system */
-//            localImage = new File(cacheFilePath, userUBIT + ".jpeg");
-//            if(localImage.exists() &&
-//                ActivityCompat.checkSelfPermission(DrawerActivity.this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED){
-//                ivProfilePicture.setImageURI(Uri.fromFile(localImage));
-//            } else {
-//
-//            }
-            if(!setFromLocal){
+
+            if(setFromLocal){
+                Log.d("avatar", "set from local");
+                ivProfilePicture.setImageURI(Uri.fromFile(imageFile));
+                setFromLocal = false;
+            } else {
+                Log.d("avatar", "set from db");
                 /* update user avatar by capturing the image url from firebase storage determined by user UBIT */
                 Task downloadAvatar = firebaseStorage.child("avatar/"+userUBIT).getDownloadUrl();
 
                 downloadAvatar.addOnSuccessListener(new OnSuccessListener<Uri>() {
                     @Override
                     public void onSuccess(Uri uri) {
-                        Log.d("Download avatar", "found download link");
                         avatarLoading();
                         Picasso.with(DrawerActivity.this).load(uri).into(ivProfilePicture);
                         avatarLoaded();
                     }
                 });
-            } else {
-                setFromLocal = false;
             }
 
             navigationView.getMenu().clear();
@@ -445,7 +441,7 @@ public class DrawerActivity extends AppCompatActivity
                 }
                 break;
             case REQUEST_CROP:
-                ivProfilePicture.setImageURI(Uri.fromFile(imageFile));
+
                 InputStream imgStream = null;
                 /*load image file as stream*/
                 try{
@@ -454,13 +450,22 @@ public class DrawerActivity extends AppCompatActivity
                     e.printStackTrace();
                 }
                 /*compress the image*/
-                Bitmap originalImg = BitmapFactory.decodeStream(imgStream);
-                Bitmap compressedImg = Bitmap.createScaledBitmap(originalImg, (int)(originalImg.getWidth()*0.3), (int)(originalImg.getHeight()*0.3), true);
+                Bitmap compressedImg = BitmapFactory.decodeStream(imgStream);
+                Bitmap resized = Bitmap.createScaledBitmap(compressedImg, (int)(compressedImg.getWidth()*0.3), (int)(compressedImg.getHeight()*0.3), true);
+                try {
+                    FileOutputStream fout = new FileOutputStream(imageFile);
+                    resized.compress(Bitmap.CompressFormat.JPEG, 50, fout);
+                    fout.flush();
+                } catch (Exception e){
+                    e.printStackTrace();
+                }
+
+                Uri image = Uri.fromFile(imageFile);
 
                 /* upload image uri to firebase storage and name the image file by user UBIT and save it in avatar folder */
                 StorageReference filepath = firebaseStorage.child("avatar/").child(userUBIT);
-                String newBitmapPath = MediaStore.Images.Media.insertImage(getContentResolver(), compressedImg, userUBIT, null);
-                filepath.putFile(Uri.parse(newBitmapPath));
+                filepath.putFile(image);
+                Log.d("avatar", "flag set true");
                 setFromLocal = true;
                 break;
         }

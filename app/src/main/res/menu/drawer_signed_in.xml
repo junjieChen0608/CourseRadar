@@ -2,11 +2,11 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
-        android:id="@+id/nav_sign_out"
-        android:title="Sign out" />
-
-    <item
         android:id="@+id/nav_my_reviews"
         android:title="My reviews"
         />
+
+    <item
+        android:id="@+id/nav_sign_out"
+        android:title="Sign out" />
 </menu>
