@@ -304,6 +304,7 @@ public class DrawerActivity extends AppCompatActivity
 
             navigationView.getMenu().clear();
             navigationView.inflateMenu(R.menu.drawer_signed_in);
+            navigationView.inflateMenu(R.menu.drawer_signed_in_reviews);
         }else{
             Log.d(TAG, "updating UI as signed out status");
             tvUserName.setText(R.string.guest);
@@ -312,6 +313,8 @@ public class DrawerActivity extends AppCompatActivity
             ivProfilePicture.setImageDrawable(getDrawable(R.drawable.pic_holder));
             navigationView.getMenu().clear();
             navigationView.inflateMenu(R.menu.drawer_signed_out);
+
+
         }
     }
 
