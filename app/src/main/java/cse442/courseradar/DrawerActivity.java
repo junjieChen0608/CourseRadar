@@ -312,6 +312,8 @@ public class DrawerActivity extends AppCompatActivity
             ivProfilePicture.setImageDrawable(getDrawable(R.drawable.pic_holder));
             navigationView.getMenu().clear();
             navigationView.inflateMenu(R.menu.drawer_signed_out);
+
+
         }
     }
 
