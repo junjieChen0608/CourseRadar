@@ -23,7 +23,7 @@
             android:id="@+id/tv_instructor_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="32dp"
+            android:layout_marginStart="16dp"
             android:layout_marginTop="16dp"
             android:text=""
             android:textSize="20sp"
@@ -37,7 +37,7 @@
             android:id="@+id/tv_course_id"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="32dp"
+            android:layout_marginStart="16dp"
             android:layout_marginTop="8dp"
             android:text=""
             android:textSize="20sp"
@@ -50,7 +50,7 @@
             android:id="@+id/tv_overall_rating"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="32dp"
+            android:layout_marginStart="16dp"
             android:layout_marginTop="8dp"
             android:text="@string/overall_quality"
             app:layout_constraintLeft_toRightOf="@+id/iv_instructor_photo"
@@ -62,28 +62,30 @@
             android:id="@+id/tv_lecture_rating"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="32dp"
+            android:layout_marginStart="16dp"
             android:text="@string/lecture_quality"
             app:layout_constraintLeft_toRightOf="@+id/iv_instructor_photo"
             tools:layout_constraintLeft_creator="1"
             tools:layout_constraintTop_creator="1"
-            app:layout_constraintTop_toBottomOf="@+id/tv_overall_rating" />
+            app:layout_constraintTop_toBottomOf="@+id/tv_overall_rating"
+            android:layout_marginTop="8dp" />
 
         <TextView
             android:id="@+id/tv_assignment_difficulty"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="32dp"
+            android:layout_marginStart="16dp"
             android:text="@string/assignment_difficulty"
             app:layout_constraintLeft_toRightOf="@+id/iv_instructor_photo"
             tools:layout_constraintTop_creator="1"
-            app:layout_constraintTop_toBottomOf="@+id/tv_lecture_rating" />
+            app:layout_constraintTop_toBottomOf="@+id/tv_lecture_rating"
+            android:layout_marginTop="8dp" />
 
         <ImageView
             android:id="@+id/iv_instructor_photo"
             android:layout_width="80dp"
             android:layout_height="80dp"
-            android:layout_marginStart="8dp"
+            android:layout_marginStart="16dp"
             android:layout_marginTop="16dp"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintTop_toTopOf="parent"
@@ -91,9 +93,10 @@
 
         <Button
             android:id="@+id/btn_click_to_rate"
-            android:layout_width="88dp"
-            android:layout_height="48dp"
-            android:layout_marginStart="8dp"
+            android:layout_width="80dp"
+            android:layout_height="50dp"
+            android:layout_marginLeft="16dp"
+            android:layout_marginStart="16dp"
             android:layout_marginTop="8dp"
             android:background="@color/colorPrimary"
             android:text="@string/rate_me"
@@ -102,8 +105,7 @@
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/iv_instructor_photo"
             tools:layout_constraintLeft_creator="1"
-            tools:layout_constraintTop_creator="1"
-            android:layout_marginLeft="8dp" />
+            tools:layout_constraintTop_creator="1" />
 
     </android.support.constraint.ConstraintLayout>
 
