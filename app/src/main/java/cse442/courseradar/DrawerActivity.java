@@ -45,7 +45,6 @@ import com.google.firebase.storage.StorageReference;
 import com.makeramen.roundedimageview.RoundedImageView;
 import com.squareup.picasso.Picasso;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -212,9 +211,9 @@ public class DrawerActivity extends AppCompatActivity
                 Log.d("nav item", "clicked my reviews");
                 startActivity(new Intent(this, MyReviewsActivity.class));
                 break;
-            case R.id.nav_mention_me:
+            case R.id.nav_mentioned_me:
                 Log.d("nav item", "click mentioned me");
-                startActivity(new Intent(this, MentionMeActivity.class));
+                startActivity(new Intent(this, MentionedMeActivity.class));
                 break;
         }
         drawer.closeDrawer(GravityCompat.START);

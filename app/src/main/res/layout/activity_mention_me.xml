@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="cse442.courseradar.MentionMeActivity">
+    tools:context="cse442.courseradar.MentionedMeActivity">
 
     <ListView
         android:id="@+id/lv_my_courses"
