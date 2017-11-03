@@ -37,6 +37,7 @@ public class DetailedViewActivity extends AppCompatActivity {
     private static final String TAG = DetailedViewActivity.class.getSimpleName();
     private static final String INSTRUCTORS = "instructors";
     private static final String RATINGS = "ratings";
+    private static final String MENTIONED_ME= "mentioned me";
 
     private DatabaseReference instructorDB;
     private DatabaseReference ratingsDB;
@@ -47,7 +48,7 @@ public class DetailedViewActivity extends AppCompatActivity {
     private Button btnClickToRate;
     private ProgressBar pbReviewListWait;
     private ListView lvReviewsList;
-    private String currentInstructor, currentCourseID, currentInstructorEmail;
+    private String currentInstructor, currentCourseID, currentInstructorEmail, userUBIT;
     private int countReviews;
 
     @Override
@@ -79,6 +80,12 @@ public class DetailedViewActivity extends AppCompatActivity {
             currentInstructor = extra.getString("currentInstructor");
             currentCourseID = extra.getString("currentCourseID");
             currentInstructorEmail = extra.getString("currentInstructorEmail");
+        }
+
+        if(currentInstructorEmail.endsWith(MENTIONED_ME)){
+            btnClickToRate.setVisibility(View.GONE);
+            ivInstructorPhoto.setVisibility(View.GONE);
+//            currentInstructorEmail = currentInstructorEmail.substring(0, currentInstructorEmail.indexOf(MENTIONED_ME));
         }
 
         /*
