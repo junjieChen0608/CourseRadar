@@ -212,6 +212,10 @@ public class DrawerActivity extends AppCompatActivity
                 Log.d("nav item", "clicked my reviews");
                 startActivity(new Intent(this, MyReviewsActivity.class));
                 break;
+            case R.id.nav_mention_me:
+                Log.d("nav item", "click mentioned me");
+                startActivity(new Intent(this, MentionMeActivity.class));
+                break;
         }
         drawer.closeDrawer(GravityCompat.START);
         return true;
