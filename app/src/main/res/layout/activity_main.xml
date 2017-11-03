@@ -39,8 +39,8 @@
         <SearchView
             android:id="@+id/sv_search_bar"
             android:layout_height="wrap_content"
-            android:layout_width="300dp"
-            android:layout_marginStart="32dp"
+            android:layout_width="320dp"
+            android:layout_marginStart="16dp"
             android:layout_marginTop="80dp"
             android:queryHint="@string/search_hint"
             app:layout_constraintLeft_toLeftOf="parent"
