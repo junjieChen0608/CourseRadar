@@ -7,8 +7,11 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ExpandableListView;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
@@ -37,6 +40,9 @@ public class MyReviewsActivity extends AppCompatActivity {
     private MyReviewsAdapter reviewsAdapter;
     private AlertDialog changeReviewsDialog;
     private DatabaseReference ratingDB;
+    private boolean hasReviews;
+    private ProgressBar pbMyReviewsWait;
+    private TextView tvMyReviewsNoReviews;
     String instructorName;
     String courseID;
 
@@ -44,6 +50,7 @@ public class MyReviewsActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_my_reviews);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         /*
             build a YES/NO dialog, so when user click on child item
@@ -85,12 +92,17 @@ public class MyReviewsActivity extends AppCompatActivity {
         setChildIndicatorToRight();
         String userUBIT = UBITValidation.parseUBIT(FirebaseAuth.getInstance().getCurrentUser().getEmail());
         ratingDB = FirebaseDatabase.getInstance().getReference(RATINGS).child(userUBIT);
+        pbMyReviewsWait = findViewById(R.id.pb_my_reviews_wait);
+        tvMyReviewsNoReviews = findViewById(R.id.tv_my_reviews_no_reviews);
     }
 
     @Override
     protected void onStart() {
         super.onStart();
         Log.d("ELV", "onStart");
+        pbMyReviewsWait.setVisibility(View.VISIBLE);
+        tvMyReviewsNoReviews.setVisibility(View.GONE);
+        elvMyReviews.setVisibility(View.GONE);
         populateMyReviewsList();
     }
 
@@ -120,9 +132,12 @@ public class MyReviewsActivity extends AppCompatActivity {
                     // initialize the ExpandableListView adapter
                     reviewsAdapter = new MyReviewsAdapter(MyReviewsActivity.this, header, child);
                     elvMyReviews.setAdapter(reviewsAdapter);
+                    hasReviews = true;
                 } else {
                     Log.d("ELV", "this user has no review");
+                    hasReviews = false;
                 }
+                loadComplete();
             }
 
             @Override
@@ -167,5 +182,23 @@ public class MyReviewsActivity extends AppCompatActivity {
         final float scale = getResources().getDisplayMetrics().density;
         // Convert the dps to pixels, based on density scale
         return (int) (pixels * scale + 0.5f);
+    }
+
+    private void loadComplete(){
+        pbMyReviewsWait.setVisibility(View.GONE);
+        if(hasReviews){
+            elvMyReviews.setVisibility(View.VISIBLE);
+        }else{
+            tvMyReviewsNoReviews.setVisibility(View.VISIBLE);
+        }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        Log.d("back", String.valueOf(item.getItemId()));
+        if (item.getItemId() == android.R.id.home){
+            finish();
+        }
+        return super.onOptionsItemSelected(item);
     }
 }

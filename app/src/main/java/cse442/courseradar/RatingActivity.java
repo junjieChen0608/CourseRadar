@@ -3,6 +3,7 @@ package cse442.courseradar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -43,6 +44,7 @@ public class RatingActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_rating);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         /*initialize UI elements*/
         tvInstructorName = (TextView) findViewById(R.id.tv_instructor_name);
         tvInstructorName.setText(getIntent().getStringExtra("instructorName"));
@@ -204,6 +206,14 @@ public class RatingActivity extends AppCompatActivity {
             Log.d(TAG, "checking instructor rating DB");
             instructorDB.child(instructorName).child("courses").child(courseID).addListenerForSingleValueEvent(valueEventListener);
         }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if(item.getItemId() == android.R.id.home){
+            finish();
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     private String parseUBIT(String email){
