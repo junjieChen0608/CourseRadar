@@ -95,7 +95,7 @@
 
         <Button
             android:id="@+id/btn_click_to_rate"
-            android:layout_width="88dp"
+            android:layout_width="80dp"
             android:layout_height="50dp"
             android:layout_marginStart="16dp"
             android:layout_marginTop="8dp"
@@ -145,14 +145,10 @@
         android:textColor="#000000"
         android:text="There is no reviews"
         android:visibility="gone"
-        android:layout_marginRight="0dp"
         app:layout_constraintRight_toRightOf="parent"
-        android:layout_marginLeft="0dp"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        android:layout_marginTop="88dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        android:layout_marginBottom="0dp" />
+        app:layout_constraintBottom_toBottomOf="parent" />
 
     <ListView
         android:id="@+id/lv_instructor_info"
