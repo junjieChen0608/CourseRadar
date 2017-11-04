@@ -3,6 +3,7 @@ package cse442.courseradar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -43,6 +44,7 @@ public class RatingActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_rating);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         /*initialize UI elements*/
         tvInstructorName = (TextView) findViewById(R.id.tv_instructor_name);
         tvInstructorName.setText(getIntent().getStringExtra("instructorName"));
@@ -68,23 +70,27 @@ public class RatingActivity extends AppCompatActivity {
         btnSubmit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                instructorName = tvInstructorName.getText().toString();
-                courseID = tvCourseID.getText().toString();
                 comment = etComment.getText().toString();
+                if(comment.length() <= 1000){
+                    instructorName = tvInstructorName.getText().toString();
+                    courseID = tvCourseID.getText().toString();
 
-                overallQuality = (int) rbOverallQuality.getRating();
-                lectureQuality = (int) rbLectureQuality.getRating();
-                assignmentDiff = (int) rbAssignmentDiff.getRating();
+                    overallQuality = (int) rbOverallQuality.getRating();
+                    lectureQuality = (int) rbLectureQuality.getRating();
+                    assignmentDiff = (int) rbAssignmentDiff.getRating();
 
-                Log.d(TAG, "Instructor name: " + instructorName + "\n" +
+                    Log.d(TAG, "Instructor name: " + instructorName + "\n" +
                             "Course ID: " + courseID + "\n" +
                             "Overall: " + overallQuality + "\n" +
                             "Lecture: " + lectureQuality + "\n" +
                             "Assignment Difficulty: " + assignmentDiff + "\n" +
                             "Comment: " + comment);
-                /*fetch rating data from both user's and instructor's rating database*/
-                getRatingDatabase(RATINGS);
-                getRatingDatabase(INSTRUCTORS);
+                    /*fetch rating data from both user's and instructor's rating database*/
+                    getRatingDatabase(RATINGS);
+                    getRatingDatabase(INSTRUCTORS);
+                }else {
+                    Toast.makeText(RatingActivity.this, "Your comment cannot exceeds 1000 characters", Toast.LENGTH_SHORT).show();
+                }
             }
         });
     }
@@ -200,6 +206,14 @@ public class RatingActivity extends AppCompatActivity {
             Log.d(TAG, "checking instructor rating DB");
             instructorDB.child(instructorName).child("courses").child(courseID).addListenerForSingleValueEvent(valueEventListener);
         }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if(item.getItemId() == android.R.id.home){
+            finish();
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     private String parseUBIT(String email){
