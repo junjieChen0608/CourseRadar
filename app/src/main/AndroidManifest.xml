@@ -30,10 +30,17 @@
             android:name=".DrawerActivity"
             android:label="@string/title_activity_drawer"
             android:theme="@style/AppTheme.NoActionBar" />
-        <activity android:name=".RatingActivity" />
+
+        <activity android:name=".RatingActivity"
+                android:label="Rate Me!"/>
+
         <activity android:name=".DetailedViewActivity" />
-        <activity android:name=".MyReviewsActivity" />
-        <activity android:name=".MentionedMeActivity"/>
+
+        <activity android:name=".MyReviewsActivity"
+                android:label="My Reviews"/>
+
+        <activity android:name=".MentionedMeActivity"
+                android:label="Mentioned Me"/>
     </application>
 
 </manifest>
