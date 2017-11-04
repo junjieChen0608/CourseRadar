@@ -42,7 +42,8 @@ public class DetailedViewActivity extends AppCompatActivity {
     private DatabaseReference instructorDB;
     private DatabaseReference ratingsDB;
 
-    private TextView tvInstructorName, tvCourseID, tvOverallQuality, tvLectureQuality, tvAssignmentDifficulty;
+    private TextView tvInstructorName, tvCourseID,
+            tvOverallQuality, tvLectureQuality, tvAssignmentDifficulty, tvDetailedViewNoReviews;
     private ImageView ivInstructorPhoto;
     private AlertDialog signInAlertDialog;
     private Button btnClickToRate;
@@ -50,6 +51,7 @@ public class DetailedViewActivity extends AppCompatActivity {
     private ListView lvReviewsList;
     private String currentInstructor, currentCourseID, currentInstructorEmail, userUBIT;
     private int countReviews;
+    private boolean hasReviews;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,6 +70,7 @@ public class DetailedViewActivity extends AppCompatActivity {
         tvOverallQuality = findViewById(R.id.tv_overall_rating);
         tvLectureQuality = findViewById(R.id.tv_lecture_rating);
         tvAssignmentDifficulty = findViewById(R.id.tv_assignment_difficulty);
+        tvDetailedViewNoReviews = findViewById(R.id.tv_detailed_view_no_reviews);
         ivInstructorPhoto = findViewById(R.id.iv_instructor_photo);
         btnClickToRate = (Button) findViewById(R.id.btn_click_to_rate);
         lvReviewsList = (ListView) findViewById(R.id.lv_reviews_list);
@@ -84,7 +87,6 @@ public class DetailedViewActivity extends AppCompatActivity {
 
         if(currentInstructorEmail.endsWith(MENTIONED_ME)){
             btnClickToRate.setVisibility(View.GONE);
-            ivInstructorPhoto.setVisibility(View.GONE);
 //            currentInstructorEmail = currentInstructorEmail.substring(0, currentInstructorEmail.indexOf(MENTIONED_ME));
         }
 
@@ -141,6 +143,9 @@ public class DetailedViewActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
+        pbReviewListWait.setVisibility(View.VISIBLE);
+        lvReviewsList.setVisibility(View.GONE);
+        tvDetailedViewNoReviews.setVisibility(View.GONE);
         showInstructorInfo(currentInstructor, currentCourseID);
     }
 
@@ -231,6 +236,7 @@ public class DetailedViewActivity extends AppCompatActivity {
                     // no ratings and reviews
                     ReviewInfoAdapter reviewInfoAdapter = new ReviewInfoAdapter(DetailedViewActivity.this, reviewInfos);
                     lvReviewsList.setAdapter(reviewInfoAdapter);
+                    hasReviews = false;
                     reviewListReady();
                 } else {
                     countReviews = 0;
@@ -261,6 +267,7 @@ public class DetailedViewActivity extends AppCompatActivity {
                                 if (numReviews == countReviews) {
                                     ReviewInfoAdapter reviewInfoAdapter = new ReviewInfoAdapter(DetailedViewActivity.this, reviewInfos);
                                     lvReviewsList.setAdapter(reviewInfoAdapter);
+                                    hasReviews = true;
                                     reviewListReady();
                                 }
                             }
@@ -280,7 +287,11 @@ public class DetailedViewActivity extends AppCompatActivity {
     // hide the progress bar when the ListView content is available
     private void reviewListReady(){
         pbReviewListWait.setVisibility(View.GONE);
-        lvReviewsList.setVisibility(View.VISIBLE);
+        if(hasReviews){
+            lvReviewsList.setVisibility(View.VISIBLE);
+        }else {
+            tvDetailedViewNoReviews.setVisibility(View.VISIBLE);
+        }
     }
 
     @Override
