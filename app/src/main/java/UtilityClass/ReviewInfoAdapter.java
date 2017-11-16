@@ -85,6 +85,7 @@ public class ReviewInfoAdapter extends ArrayAdapter<ReviewInfo> {
                 profileImage.setImageResource(R.drawable.pic_holder);
         }
 
+        // TODO implement: add an onClickListener to the LIKE image and a textview to display total number of likes
         return listItemView;
     }
 }

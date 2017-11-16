@@ -86,7 +86,6 @@ public class MyReviewsAdapter extends BaseExpandableListAdapter {
         int indexOfDash = headerTitle.indexOf("-");
         tvHeaderInstructorName.setText(headerTitle.substring(0, indexOfDash));
         tvHeaderCourseID.setText((headerTitle.substring(indexOfDash+1)));
-        // TODO implement: can get child and set the ImageView of the rating face
         return view;
     }
 

@@ -241,8 +241,8 @@ public class DetailedViewActivity extends AppCompatActivity {
                 } else {
                     countReviews = 0;
                     for (HashMap.Entry<String, String> entry : reviews.entrySet()) {
-                        final String name = entry.getKey();
-                        if (name.equals("dummy")) {
+                        final String reviewerUBIT = entry.getKey();
+                        if (reviewerUBIT.equals("dummy")) {
                             continue;
                         }
 
@@ -251,20 +251,33 @@ public class DetailedViewActivity extends AppCompatActivity {
                             use it to instantiate a ReviewInfo object,
                             then add this object to reviewInfos list for ListView usage
                          */
-                        ratingsDB.child(name).child(instructorName + "-" + courseID).addListenerForSingleValueEvent(new ValueEventListener() {
+                        ratingsDB.child(reviewerUBIT).child(instructorName + "-" + courseID).addListenerForSingleValueEvent(new ValueEventListener() {
                             @Override
                             public void onDataChange(DataSnapshot dataSnapshot) {
+                                /**
+                                 * TODO implement: when presenting each review item, should look up the ratings database to retrieve total
+                                 * numbers of likes, and display it to the right of the LIKE imageview
+                                 *
+                                 * TODO implement: look up the likes database if current user has liked this review or not
+                                 * if true, set the LIKE imgaeview to cliked status
+                                 * else, just don't touch it, by default it should be false
+                                 */
                                 countReviews += 1;
                                 HashMap<String, Object> theStudentReviewDetail = (HashMap<String, Object>) dataSnapshot.getValue();
-                                ReviewInfo reviewInfo = new ReviewInfo(name, theStudentReviewDetail);
+                                /**
+                                 * TODO implement: check if "likes" is presented in theStudentReviewDetail map
+                                 * if not, just put a (likes, 0) to it, and use it construct a ReviewInfo instance
+                                 */
+                                ReviewInfo reviewInfo = new ReviewInfo(reviewerUBIT, theStudentReviewDetail);
                                 reviewInfos.add(reviewInfo);
-                                Log.wtf(TAG, "counter reviews is: " + countReviews +" instructor name is: " + name);
+                                Log.wtf(TAG, "counter reviews is: " + countReviews +" instructor name is: " + reviewerUBIT);
 
                                 /*
                                     use a local counter to detect end of iteration,
                                     a workaround of asynchronous firebase callback
                                  */
                                 if (numReviews == countReviews) {
+                                    // TODO implement: sort the reviewsInfo ArrayList according to likes in ascending order
                                     ReviewInfoAdapter reviewInfoAdapter = new ReviewInfoAdapter(DetailedViewActivity.this, reviewInfos);
                                     lvReviewsList.setAdapter(reviewInfoAdapter);
                                     hasReviews = true;

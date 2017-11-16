@@ -61,7 +61,7 @@ public class MyReviewsActivity extends AppCompatActivity {
         builder.setPositiveButton("YES", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                //TODO implement: launch a new RatingActivity
+                // launch a new RatingActivity
                 Intent changeReviewIntent = new Intent(MyReviewsActivity.this, RatingActivity.class);
                 changeReviewIntent.putExtra("instructorName", instructorName);
                 changeReviewIntent.putExtra("courseID", courseID);

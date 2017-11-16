@@ -55,6 +55,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
 
+            <!--TODO add: an ImageView of thumbs up-->
+            <!--TODO add: a TextView to the right of the LIKE ImageView-->
+
         </LinearLayout>
 
     </RelativeLayout>
