@@ -18,17 +18,18 @@
             android:layout_alignParentLeft="true"
             android:layout_marginTop="4dp"
             android:layout_marginRight="16dp"
-            android:id="@+id/iv_pp_image"
+            android:id="@+id/iv_rating_face"
             android:layout_width="50dp"
             android:layout_height="50dp"
             android:src = "@drawable/pic_holder"/>
 
         <LinearLayout
+            android:id="@+id/linear_layout_reviews"
             android:layout_alignParentRight="true"
             android:orientation="vertical"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_alignLeft="@+id/iv_pp_image"
+            android:layout_alignLeft="@+id/iv_rating_face"
             android:layout_marginStart="60dp">
 
 
@@ -55,10 +56,32 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
 
-            <!--TODO add: an ImageView of thumbs up-->
-            <!--TODO add: a TextView to the right of the LIKE ImageView-->
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/linear_layout_thumbs_up"
+            android:orientation="horizontal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignRight="@id/linear_layout_reviews">
+
+            <!--an ImageView of thumbs up-->
+            <ImageView
+                android:id="@+id/iv_thumbs_up"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/like_unclicked"/>
+            <!--a TextView to the right of the LIKE ImageView-->
+            <TextView
+                android:id="@+id/tv_total_likes"
+                android:layout_width="wrap_content"
+                android:layout_height="24dp"
+                android:text="1"
+                android:textSize="16sp"
+                android:layout_marginLeft="2dp"/>
 
         </LinearLayout>
+
 
     </RelativeLayout>
 

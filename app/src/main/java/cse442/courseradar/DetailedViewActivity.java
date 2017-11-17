@@ -37,10 +37,10 @@ public class DetailedViewActivity extends AppCompatActivity {
     private static final String TAG = DetailedViewActivity.class.getSimpleName();
     private static final String INSTRUCTORS = "instructors";
     private static final String RATINGS = "ratings";
+    private static final String LIKES = "likes";
     private static final String MENTIONED_ME= "mentioned me";
 
-    private DatabaseReference instructorDB;
-    private DatabaseReference ratingsDB;
+    private DatabaseReference instructorDB, ratingsDB, likesDB;
 
     private TextView tvInstructorName, tvCourseID,
             tvOverallQuality, tvLectureQuality, tvAssignmentDifficulty, tvDetailedViewNoReviews;
@@ -63,6 +63,9 @@ public class DetailedViewActivity extends AppCompatActivity {
 
         instructorDB = FirebaseDatabase.getInstance().getReference(INSTRUCTORS);
         ratingsDB = FirebaseDatabase.getInstance().getReference(RATINGS);
+        likesDB = FirebaseDatabase.getInstance().getReference(LIKES);
+
+        userUBIT = parseUBIT(FirebaseAuth.getInstance().getCurrentUser().getEmail());
 
         /*detailed view UI elements initialization*/
         tvInstructorName = findViewById(R.id.tv_instructor_name);
@@ -234,7 +237,8 @@ public class DetailedViewActivity extends AppCompatActivity {
 
                 if (numReviews == 0) {
                     // no ratings and reviews
-                    ReviewInfoAdapter reviewInfoAdapter = new ReviewInfoAdapter(DetailedViewActivity.this, reviewInfos);
+                    ReviewInfoAdapter reviewInfoAdapter = new ReviewInfoAdapter(DetailedViewActivity.this, reviewInfos
+                                                                                , ratingsDB, likesDB, userUBIT, instructorName, courseID);
                     lvReviewsList.setAdapter(reviewInfoAdapter);
                     hasReviews = false;
                     reviewListReady();
@@ -278,7 +282,8 @@ public class DetailedViewActivity extends AppCompatActivity {
                                  */
                                 if (numReviews == countReviews) {
                                     // TODO implement: sort the reviewsInfo ArrayList according to likes in ascending order
-                                    ReviewInfoAdapter reviewInfoAdapter = new ReviewInfoAdapter(DetailedViewActivity.this, reviewInfos);
+                                    ReviewInfoAdapter reviewInfoAdapter = new ReviewInfoAdapter(DetailedViewActivity.this, reviewInfos
+                                                                                            , ratingsDB, likesDB, userUBIT, instructorName, courseID);
                                     lvReviewsList.setAdapter(reviewInfoAdapter);
                                     hasReviews = true;
                                     reviewListReady();
