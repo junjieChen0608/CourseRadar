@@ -77,16 +77,24 @@ public class MainActivity extends DrawerActivity implements SearchView.OnQueryTe
     @Override
     protected void onStart() {
         super.onStart();
-        Log.wtf("onStart","MainActivity onStart");
+        Log.wtf("avatar","MainActivity onStart");
         /*mark this activity as current activity*/
         currentActivity = this;
         if(FirebaseAuth.getInstance().getCurrentUser() == null){
             Log.wtf(TAG + " onStart", "user is signed out");
         }
-        updateDrawerUI(FirebaseAuth.getInstance().getCurrentUser());
+//        updateDrawerUI(FirebaseAuth.getInstance().getCurrentUser());
         if(checkedCourseID != null){
             onQueryTextSubmit(checkedCourseID);
         }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.wtf("avatar","MainActivity onResume");
+        /* update drawer UI from here to wait for the setFromLocal flag to be set */
+        updateDrawerUI(FirebaseAuth.getInstance().getCurrentUser());
     }
 
     @Override

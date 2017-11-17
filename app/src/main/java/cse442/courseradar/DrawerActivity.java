@@ -31,7 +31,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.auth.api.Auth;
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -46,11 +45,13 @@ import com.google.firebase.storage.StorageReference;
 import com.makeramen.roundedimageview.RoundedImageView;
 import com.squareup.picasso.Picasso;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+
+import UtilityClass.UBITValidation;
 
 public class DrawerActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.OnConnectionFailedListener {
@@ -85,6 +86,7 @@ public class DrawerActivity extends AppCompatActivity
     private File cacheFilePath;
     private String userUBIT;
     private ProgressBar pbLoadAvatar;
+    protected UBITValidation ubitValid;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -186,6 +188,7 @@ public class DrawerActivity extends AppCompatActivity
                 }).create();
         cacheFilePath = this.getExternalCacheDir();
         pbLoadAvatar = headerView.findViewById(R.id.pb_load_avatar);
+        ubitValid = new UBITValidation();
     }
 
     @SuppressWarnings("StatementWithEmptyBody")
@@ -203,6 +206,14 @@ public class DrawerActivity extends AppCompatActivity
                 break;
             case R.id.nav_sign_out:
                 signOut();
+                break;
+            case R.id.nav_my_reviews:
+                Log.d("nav item", "clicked my reviews");
+                startActivity(new Intent(this, MyReviewsActivity.class));
+                break;
+            case R.id.nav_mentioned_me:
+                Log.d("nav item", "click mentioned me");
+                startActivity(new Intent(this, MentionedMeActivity.class));
                 break;
         }
         drawer.closeDrawer(GravityCompat.START);
@@ -274,32 +285,27 @@ public class DrawerActivity extends AppCompatActivity
         }
         if(user != null){
             Log.d(TAG, "update UI as signed in status");
-            tvUserName.setText(parseUBIT(user.getEmail()));
+            tvUserName.setText(ubitValid.parseUBIT(user.getEmail()));
             tvUserEmail.setText(user.getEmail());
-            userUBIT = parseUBIT(FirebaseAuth.getInstance().getCurrentUser().getEmail());
-            /* check if image is exsited in local file system */
-//            localImage = new File(cacheFilePath, userUBIT + ".jpeg");
-//            if(localImage.exists() &&
-//                ActivityCompat.checkSelfPermission(DrawerActivity.this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED){
-//                ivProfilePicture.setImageURI(Uri.fromFile(localImage));
-//            } else {
-//
-//            }
-            if(!setFromLocal){
+            userUBIT = ubitValid.parseUBIT(FirebaseAuth.getInstance().getCurrentUser().getEmail());
+
+            if(setFromLocal){
+                Log.d("avatar", "set from local");
+                ivProfilePicture.setImageURI(Uri.fromFile(imageFile));
+                setFromLocal = false;
+            } else {
+                Log.d("avatar", "set from db");
                 /* update user avatar by capturing the image url from firebase storage determined by user UBIT */
                 Task downloadAvatar = firebaseStorage.child("avatar/"+userUBIT).getDownloadUrl();
 
                 downloadAvatar.addOnSuccessListener(new OnSuccessListener<Uri>() {
                     @Override
                     public void onSuccess(Uri uri) {
-                        Log.d("Download avatar", "found download link");
                         avatarLoading();
                         Picasso.with(DrawerActivity.this).load(uri).into(ivProfilePicture);
                         avatarLoaded();
                     }
                 });
-            } else {
-                setFromLocal = false;
             }
 
             navigationView.getMenu().clear();
@@ -342,16 +348,6 @@ public class DrawerActivity extends AppCompatActivity
         if (progressDialog != null && progressDialog.isShowing()) {
             progressDialog.dismiss();
         }
-    }
-
-    /* check if this account is UB email */
-    protected boolean isUBEmail(GoogleSignInAccount account){
-        return account != null && account.getEmail().contains("@buffalo.edu");
-    }
-
-    /* parse user's UBIT from UB email */
-    protected String parseUBIT(String email){
-        return email.substring(0, email.indexOf("@"));
     }
 
     @Override
@@ -448,7 +444,7 @@ public class DrawerActivity extends AppCompatActivity
                 }
                 break;
             case REQUEST_CROP:
-                ivProfilePicture.setImageURI(Uri.fromFile(imageFile));
+
                 InputStream imgStream = null;
                 /*load image file as stream*/
                 try{
@@ -458,19 +454,21 @@ public class DrawerActivity extends AppCompatActivity
                 }
                 /*compress the image*/
                 Bitmap compressedImg = BitmapFactory.decodeStream(imgStream);
-                ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-                compressedImg.compress(Bitmap.CompressFormat.JPEG, 20, byteArrayOutputStream);
-                try{
-                    byteArrayOutputStream.close();
-                } catch (IOException e) {
+                Bitmap resized = Bitmap.createScaledBitmap(compressedImg, (int)(compressedImg.getWidth()*0.3), (int)(compressedImg.getHeight()*0.3), true);
+                try {
+                    FileOutputStream fout = new FileOutputStream(imageFile);
+                    resized.compress(Bitmap.CompressFormat.JPEG, 50, fout);
+                    fout.flush();
+                } catch (Exception e){
                     e.printStackTrace();
                 }
 
+                Uri image = Uri.fromFile(imageFile);
+
                 /* upload image uri to firebase storage and name the image file by user UBIT and save it in avatar folder */
                 StorageReference filepath = firebaseStorage.child("avatar/").child(userUBIT);
-                String newBitmapPath = MediaStore.Images.Media.insertImage(getContentResolver(), compressedImg, userUBIT, null);
-                filepath.putFile(Uri.parse(newBitmapPath));
-//                imageFile.renameTo(new File(cacheFilePath, userUBIT + ".jpeg"));
+                filepath.putFile(image);
+                Log.d("avatar", "flag set true");
                 setFromLocal = true;
                 break;
         }

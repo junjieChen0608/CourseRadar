@@ -137,7 +137,7 @@
             android:textAllCaps="false"
             android:text="Submit my rating"
             android:textColor="@color/colorFaintGrey"
-            android:background="@color/colorPrimary"
+            android:background="@drawable/btn_round_corner"
             android:layout_width="@dimen/major_btn_width"
             android:layout_height="@dimen/major_btn_height"
             android:layout_marginTop="8dp"
@@ -146,10 +146,10 @@
             app:layout_constraintRight_toRightOf="parent"
             android:layout_marginLeft="8dp"
             app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
-            android:layout_marginBottom="8dp"
             android:layout_marginStart="8dp"
-            android:layout_marginEnd="8dp" />
+            android:layout_marginEnd="8dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:layout_marginBottom="8dp" />
 
 
     </android.support.constraint.ConstraintLayout>
