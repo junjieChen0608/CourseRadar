@@ -1,4 +1,4 @@
-# CourseRadar (Version v0.4.0)
+# CourseRadar (Version v1.0.0)
 This is a senior design software project from team Tit4Tat. 
 Basically, it is an android application that 
 UB students can view and share course informations, professor evaluation, syllabus abstractions. 
