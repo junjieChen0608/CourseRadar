@@ -13,6 +13,8 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -86,22 +88,22 @@ public class ReviewInfoAdapter extends ArrayAdapter<ReviewInfo> {
 
         // show the LIKE ImageView and total likes TextView
         TextView tvTotalLikes = listItemView.findViewById(R.id.tv_total_likes);
-        tvTotalLikes.setText(String.valueOf(currentReview.getTotalLikes()));
+        formatTextView(currentReview.getTotalLikes(), tvTotalLikes);
 
         ImageView ivLike = listItemView.findViewById(R.id.iv_thumbs_up);
         // set a tag for this ImageView, it is used to determined if the LIKE is clicked
         // 99 = not clicked, 100 = clicked
         // check if this user liked this review
+        ivLike.setTag(99);
+        ivLike.setImageDrawable(getContext().getDrawable(R.drawable.like_unclicked));
         likesDB.child(userUBIT).child(getItem(position).getName()+"-"+instructorName+"-"+courseID).addListenerForSingleValueEvent(new ValueEventListener() {
 
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if(dataSnapshot.exists()){
+                    Log.d(DEBUG_LIKES_TAG, "review from " + currentReview.getName() + ", should set as blue");
                     ivLike.setImageDrawable(getContext().getDrawable(R.drawable.like_clicked));
                     ivLike.setTag(100);
-                }else{
-                    ivLike.setImageDrawable(getContext().getDrawable(R.drawable.like_unclicked));
-                    ivLike.setTag(99);
                 }
             }
 
@@ -148,7 +150,7 @@ public class ReviewInfoAdapter extends ArrayAdapter<ReviewInfo> {
                 if(imgTag == 99){
                     Log.d(DEBUG_LIKES_TAG, userUBIT + " liked " + reviewerUBIT + "'s rating on " + instructorName + "'s " + courseID);
                     /**
-                     * TODO implement: like clicked logic
+                     * like clicked logic
                      */
                     // 1 increment that review's number of likes by 1
                     ratingsDBPath.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -157,17 +159,22 @@ public class ReviewInfoAdapter extends ArrayAdapter<ReviewInfo> {
                             if(dataSnapshot.exists()){
                                 // read the current number of likes then increment by 1
                                 Long totalLikes = dataSnapshot.getValue(Long.class);
-                                ratingsDBPath.setValue(totalLikes+1);
+                                ratingsDBPath.setValue(totalLikes+1).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                    @Override
+                                    public void onComplete(@NonNull Task<Void> task) {
+                                        // 4 increment the TextView counter by 1
+                                        // format the TextView according to the number of likes fixed as length 4, set as 999+ if exceeds 999
+                                        Long copyOfCurrentTotalLikesInTextView = currentTotalLikesInTextView;
+                                        copyOfCurrentTotalLikesInTextView += 1;
+                                        formatTextView(totalLikes+1, tvTotalLikes);
+                                    }
+                                });
                                 // 2 create a new node in likes database, organize in the format of userUBIT -> (reviewerUBIT-instructorName-courseID)
                                 likesDB.child(userUBIT).child(reviewerUBIT+"-"+instructorName+"-"+courseID).setValue(1);
                                 // 3 set the LIKE ImageView as clicked
                                 ivLike.setImageDrawable(getContext().getDrawable(R.drawable.like_clicked));
                                 ivLike.setTag(100);
-                                // 4 increment the TextView counter by 1
-                                // format the TextView according to the number of likes fixed as length 4, set as 999+ if exceeds 999
-                                Long copyOfCurrentTotalLikesInTextView = currentTotalLikesInTextView;
-                                copyOfCurrentTotalLikesInTextView += 1;
-                                formatTextView(copyOfCurrentTotalLikesInTextView, tvTotalLikes);
+
                             }
                         }
 
@@ -178,7 +185,7 @@ public class ReviewInfoAdapter extends ArrayAdapter<ReviewInfo> {
                 }else{
                     Log.d(DEBUG_LIKES_TAG, userUBIT + " unliked " + reviewerUBIT + "'s rating on " + instructorName + "'s " + courseID);
                     /**
-                     * TODO implement: like unclicked logic
+                     * like unclicked logic
                      */
 
                     // 1 decrement that review's number of likes by 1
@@ -188,15 +195,20 @@ public class ReviewInfoAdapter extends ArrayAdapter<ReviewInfo> {
                             // read the current number of likes then decrement by 1
                             if(dataSnapshot.exists()){
                                 Long totalLiks = dataSnapshot.getValue(Long.class);
-                                ratingsDBPath.setValue(totalLiks-1);
+                                ratingsDBPath.setValue(totalLiks-1).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                    @Override
+                                    public void onComplete(@NonNull Task<Void> task) {
+                                        // 4 decrement the TextView counter by 1
+                                        // format the TextView according to the number of likes fixed as length 4, set as 999+ if exceeds 999
+                                        formatTextView(totalLiks-1, tvTotalLikes);
+                                    }
+                                });
                                 // 2 delete the node in likes database, organize in the format of userUBIT -> (reviewerUBIT-instructorName-courseID)
                                 likesDB.child(userUBIT).child(reviewerUBIT+"-"+instructorName+"-"+courseID).removeValue();
                                 // 3 set the LIKE ImageView as unclicked
                                 ivLike.setImageDrawable(getContext().getDrawable(R.drawable.like_unclicked));
                                 ivLike.setTag(99);
-                                // 4 decrement the TextView counter by 1
-                                // format the TextView according to the number of likes fixed as length 4, set as 999+ if exceeds 999
-                                formatTextView(currentTotalLikesInTextView, tvTotalLikes);
+
                             }
                         }
 
@@ -214,11 +226,9 @@ public class ReviewInfoAdapter extends ArrayAdapter<ReviewInfo> {
         StringBuilder sb = new StringBuilder(String.valueOf(copyOfCurrentTotalLikesInTextView));
         if(sb.length() >= 4){
             // the length exceeds 4, just set it as 999
-            Log.d(DEBUG_LIKES_TAG, "tv exceeds 999");
             tvTotalLikes.setText("999+");
         }else{
             // the length is less than 4, pad the TextView with spaces
-            Log.d(DEBUG_LIKES_TAG, "tv less than 999");
             int paddingSpaces = 4 - sb.length();
             for (int i = 0; i < paddingSpaces; i++){
                 sb.insert(0, " ");

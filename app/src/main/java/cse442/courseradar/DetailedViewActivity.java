@@ -26,6 +26,8 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 
 import UtilityClass.CourseRating;
@@ -258,20 +260,14 @@ public class DetailedViewActivity extends AppCompatActivity {
                         ratingsDB.child(reviewerUBIT).child(instructorName + "-" + courseID).addListenerForSingleValueEvent(new ValueEventListener() {
                             @Override
                             public void onDataChange(DataSnapshot dataSnapshot) {
-                                /**
-                                 * TODO implement: when presenting each review item, should look up the ratings database to retrieve total
-                                 * numbers of likes, and display it to the right of the LIKE imageview
-                                 *
-                                 * TODO implement: look up the likes database if current user has liked this review or not
-                                 * if true, set the LIKE imgaeview to cliked status
-                                 * else, just don't touch it, by default it should be false
-                                 */
                                 countReviews += 1;
                                 HashMap<String, Object> theStudentReviewDetail = (HashMap<String, Object>) dataSnapshot.getValue();
-                                /**
-                                 * TODO implement: check if "likes" is presented in theStudentReviewDetail map
-                                 * if not, just put a (likes, 0) to it, and use it construct a ReviewInfo instance
-                                 */
+
+                                if(theStudentReviewDetail.get("likes") == null){
+                                    ratingsDB.child(reviewerUBIT).child(instructorName + "-" + courseID).child("likes").setValue(0);
+                                    theStudentReviewDetail.put("likes",0);
+                                }
+
                                 ReviewInfo reviewInfo = new ReviewInfo(reviewerUBIT, theStudentReviewDetail);
                                 reviewInfos.add(reviewInfo);
                                 Log.wtf(TAG, "counter reviews is: " + countReviews +" instructor name is: " + reviewerUBIT);
@@ -281,7 +277,9 @@ public class DetailedViewActivity extends AppCompatActivity {
                                     a workaround of asynchronous firebase callback
                                  */
                                 if (numReviews == countReviews) {
-                                    // TODO implement: sort the reviewsInfo ArrayList according to likes in ascending order
+                                    // implement: sort the reviewsInfo ArrayList according to likes in ascending order
+                                    Collections.sort(reviewInfos, (o1, o2) -> (int)(o2.getTotalLikes() - o1.getTotalLikes()));
+                                    Log.d("likes", "initialize adapter");
                                     ReviewInfoAdapter reviewInfoAdapter = new ReviewInfoAdapter(DetailedViewActivity.this, reviewInfos
                                                                                             , ratingsDB, likesDB, userUBIT, instructorName, courseID);
                                     lvReviewsList.setAdapter(reviewInfoAdapter);

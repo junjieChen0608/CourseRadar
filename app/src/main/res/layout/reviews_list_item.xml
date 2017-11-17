@@ -69,8 +69,7 @@
             <ImageView
                 android:id="@+id/iv_thumbs_up"
                 android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:background="@drawable/like_unclicked"/>
+                android:layout_height="24dp" />
             <!--a TextView to the right of the LIKE ImageView-->
             <TextView
                 android:id="@+id/tv_total_likes"
