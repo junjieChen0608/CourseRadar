@@ -50,7 +50,6 @@ public class ReviewInfo {
         return (Long) reviewDetail.get("overallQuality");
     }
 
-
-
+    public Long getTotalLikes() { return (Long) reviewDetail.get("likes"); }
 
 }
