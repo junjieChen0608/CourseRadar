@@ -262,10 +262,12 @@ public class DetailedViewActivity extends AppCompatActivity {
                             public void onDataChange(DataSnapshot dataSnapshot) {
                                 countReviews += 1;
                                 HashMap<String, Object> theStudentReviewDetail = (HashMap<String, Object>) dataSnapshot.getValue();
-
                                 if(theStudentReviewDetail.get("likes") == null){
+                                    Log.d("init detail", reviewerUBIT + " has no likes field");
                                     ratingsDB.child(reviewerUBIT).child(instructorName + "-" + courseID).child("likes").setValue(0);
-                                    theStudentReviewDetail.put("likes",0);
+                                    theStudentReviewDetail.put("likes",(long)0);
+                                }else{
+                                    Log.d("init detail", reviewerUBIT + " has " + theStudentReviewDetail.get("likes") + " likes");
                                 }
 
                                 ReviewInfo reviewInfo = new ReviewInfo(reviewerUBIT, theStudentReviewDetail);
@@ -278,7 +280,12 @@ public class DetailedViewActivity extends AppCompatActivity {
                                  */
                                 if (numReviews == countReviews) {
                                     // implement: sort the reviewsInfo ArrayList according to likes in ascending order
-                                    Collections.sort(reviewInfos, (o1, o2) -> (int)(o2.getTotalLikes() - o1.getTotalLikes()));
+                                    Collections.sort(reviewInfos, new Comparator<ReviewInfo>() {
+                                        @Override
+                                        public int compare(ReviewInfo r1, ReviewInfo r2) {
+                                            return Long.compare(r2.getTotalLikes(), r1.getTotalLikes());
+                                        }
+                                    });
                                     Log.d("likes", "initialize adapter");
                                     ReviewInfoAdapter reviewInfoAdapter = new ReviewInfoAdapter(DetailedViewActivity.this, reviewInfos
                                                                                             , ratingsDB, likesDB, userUBIT, instructorName, courseID);

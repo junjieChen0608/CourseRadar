@@ -68,15 +68,16 @@
             <!--an ImageView of thumbs up-->
             <ImageView
                 android:id="@+id/iv_thumbs_up"
-                android:layout_width="24dp"
-                android:layout_height="24dp" />
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:src="@drawable/like_unclicked"/>
             <!--a TextView to the right of the LIKE ImageView-->
             <TextView
                 android:id="@+id/tv_total_likes"
                 android:layout_width="wrap_content"
-                android:layout_height="24dp"
+                android:layout_height="30dp"
                 android:text="0"
-                android:textSize="16sp"
+                android:textSize="20sp"
                 android:layout_marginLeft="2dp"/>
 
         </LinearLayout>

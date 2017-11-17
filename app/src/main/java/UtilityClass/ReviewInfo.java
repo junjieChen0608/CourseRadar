@@ -38,18 +38,18 @@ public class ReviewInfo {
         return (String) reviewDetail.get("comment");
     }
 
-    public Long getAssignmentDifficulty() {
-        return (Long) reviewDetail.get("assignmentDifficulty");
+    public long getAssignmentDifficulty() {
+        return (long) reviewDetail.get("assignmentDifficulty");
     }
 
-    public Long getLectureQuality() {
+    public long getLectureQuality() {
         return (Long) reviewDetail.get("lectureQuality");
     }
 
-    public Long getOverallQuality() {
+    public long getOverallQuality() {
         return (Long) reviewDetail.get("overallQuality");
     }
 
-    public Long getTotalLikes() { return (Long) reviewDetail.get("likes"); }
+    public long getTotalLikes() { return (Long) reviewDetail.get("likes"); }
 
 }
